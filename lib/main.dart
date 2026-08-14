@@ -13,6 +13,7 @@ import 'package:paywise/Screens/add_loan_screen.dart';
 import 'package:paywise/Screens/loan_details_screen.dart';
 import 'package:paywise/Screens/prepayment_screen.dart';
 import 'package:paywise/Screens/profile_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:paywise/services/auth_service.dart';
 import 'package:paywise/widgets/undo_toast.dart';
 import 'package:paywise/config/env_config.dart';
@@ -21,6 +22,11 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Completely disable all debug logs in release mode
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
+
   // Refuse startup if critical environment configuration is invalid
   EnvConfig.validateConfig();
 
