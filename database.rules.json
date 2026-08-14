@@ -1,0 +1,50 @@
+{
+  "rules": {
+    /* DEFAULT DENY: Deny all unauthenticated or unmatched read/write operations */
+    ".read": false,
+    ".write": false,
+
+    /* 👤 USER PROFILES: Users can only read & write their own profile data */
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    /* 💸 LOANS COLLECTION (Top-Level Loan Documents) */
+    "loans": {
+      ".indexOn": ["userId"],
+      "$loanId": {
+        /* User can only read their own loan document */
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        
+        /* User can create a new loan (if userId matches Auth UID) or update/delete an existing loan */
+        ".write": "auth != null && ((!data.exists() && newData.child('userId').val() === auth.uid) || (data.exists() && data.child('userId').val() === auth.uid))",
+
+        /* 📑 TRANSACTIONS SUB-COLLECTION UNDER A LOAN */
+        "transactions": {
+          ".read": "auth != null && root.child('loans').child($loanId).child('userId').val() === auth.uid",
+          ".write": "auth != null && root.child('loans').child($loanId).child('userId').val() === auth.uid"
+        }
+      }
+    },
+
+    /* 📊 MONTHLY SNAPSHOTS COLLECTION */
+    "snapshots": {
+      ".indexOn": ["userId"],
+      "$snapshotId": {
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        ".write": "auth != null && ((!data.exists() && newData.child('userId').val() === auth.uid) || (data.exists() && data.child('userId').val() === auth.uid))"
+      }
+    },
+
+    /* 🔐 USER-KEYED DATA FALLBACK (e.g., /user_data/{uid}) */
+    "user_data": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}

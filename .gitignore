@@ -1,0 +1,44 @@
+# ==========================================
+# 📱 PAYWISE - OPTIMIZED .GITIGNORE
+# ==========================================
+
+# 1. Flutter & Dart Build Bloat (Safe to ignore, regenerated automatically)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+lib.zip
+
+# 2. IDE & System Files (Specific to your PC)
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# 3. Environment & Secret Files
+.env
+.env.*
+!.env.example
+
+# 4. Keystore & Credential Files
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# 5. Firebase & Platform Configuration Secrets
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# 6. Unused Platforms & Generated Directories
+linux/
+macos/
+web/
+windows/
+test/
+api/
