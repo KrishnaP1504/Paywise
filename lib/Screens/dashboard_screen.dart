@@ -377,13 +377,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }).toList(),
                     ),
 
-              const SizedBox(height: 120),
+              SizedBox(height: 110.0 + MediaQuery.of(context).padding.bottom),
             ],
           ),
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 92),
+        padding: EdgeInsets.only(
+          bottom: 108.0 + MediaQuery.of(context).padding.bottom,
+        ),
         child: FloatingActionButton.extended(
           onPressed: () => Navigator.pushNamed(context, '/add_loan'),
           backgroundColor: const Color(0xFF1E3C72),

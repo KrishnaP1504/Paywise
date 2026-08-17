@@ -294,19 +294,22 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
         ],
       ),
     ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: loan.isPaidOff 
-            ? null 
-            : () {
-                HapticFeedback.mediumImpact();
-                _showPaymentDialog(context, loan);
-              },
-        label: const Text("RECORD PAYMENT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5)),
-        icon: const Icon(Icons.payment_rounded, size: 22),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-        elevation: 6,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        child: FloatingActionButton.extended(
+          onPressed: loan.isPaidOff 
+              ? null 
+              : () {
+                  HapticFeedback.mediumImpact();
+                  _showPaymentDialog(context, loan);
+                },
+          label: const Text("RECORD PAYMENT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5)),
+          icon: const Icon(Icons.payment_rounded, size: 22),
+          backgroundColor: Colors.indigo,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
       ),
     );
   }
