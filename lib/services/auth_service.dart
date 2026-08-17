@@ -19,7 +19,7 @@ class AuthService {
   // Google Sign-In
   Future<User?> signInWithGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      serverClientId: EnvConfig.googleServerClientId,
+      serverClientId: EnvConfig.googleServerClientId.isNotEmpty ? EnvConfig.googleServerClientId : null,
     );
     try {
       await googleSignIn.signOut();
@@ -147,7 +147,7 @@ class AuthService {
   /// Re-authenticate user with Google Sign-In
   Future<void> reauthenticateWithGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      serverClientId: EnvConfig.googleServerClientId,
+      serverClientId: EnvConfig.googleServerClientId.isNotEmpty ? EnvConfig.googleServerClientId : null,
     );
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
