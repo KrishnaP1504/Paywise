@@ -466,7 +466,7 @@ class _ExtraEmiTabState extends State<_ExtraEmiTab> {
     const successColor = Color(0xFF2E7D32);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
       child: Column(
         children: [
           _SimCard(
@@ -807,7 +807,7 @@ class _LumpSumTabState extends State<_LumpSumTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
       child: Column(
         children: [
           // ── MODE SELECTOR CARD ──
@@ -1301,7 +1301,7 @@ class _RefinancingTabState extends State<_RefinancingTab> {
     const successColor = Color(0xFF2E7D32);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
       child: Column(
         children: [
           _SimCard(

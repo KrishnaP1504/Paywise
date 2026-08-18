@@ -20,7 +20,7 @@ class InfoScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
         child: Column(
           children: [
             _buildHeroCard(context),

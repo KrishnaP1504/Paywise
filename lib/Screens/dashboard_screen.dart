@@ -83,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SingleChildScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 110),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -377,15 +377,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }).toList(),
                     ),
 
-              SizedBox(height: 110.0 + MediaQuery.of(context).padding.bottom),
+              const SizedBox(height: 30),
             ],
           ),
         ),
       ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: 108.0 + MediaQuery.of(context).padding.bottom,
-        ),
+        padding: const EdgeInsets.only(bottom: 84),
         child: FloatingActionButton.extended(
           onPressed: () => Navigator.pushNamed(context, '/add_loan'),
           backgroundColor: const Color(0xFF1E3C72),

@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 150),
         children: [
           // ── 1. TOP PROFILE CARD ──
           Container(
