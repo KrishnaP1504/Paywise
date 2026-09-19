@@ -35,7 +35,9 @@ jobs:
         run: flutter config --no-enable-swift-package-manager
 
       - name: Get Flutter Dependencies
-        run: flutter pub get
+        run: |
+          flutter precache --ios
+          flutter pub get
 
       - name: Install CocoaPods Dependencies
         run: |
@@ -43,13 +45,22 @@ jobs:
           pod install --repo-update
           cd ..
 
-      - name: Build iOS Release (No Codesign)
-        run: flutter build ios --release --no-codesign
+      - name: Build iOS Release (Unsigned for Sideloading)
+        run: |
+          xcodebuild build -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/ios_build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=PAYWISEAPP1
 
       - name: Package Payload into Installable IPA
         run: |
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          cp -r build/ios_build/Build/Products/Release-iphoneos/Runner.app Payload/
           zip -r PayWise.ipa Payload
           echo "PayWise.ipa created successfully!"
 
