@@ -1,0 +1,90 @@
+# 📱 PayWise — Smart Loan & Debt Tracker
+
+A powerful, modern Flutter application designed to help users track multiple loans, visualize debt amortization, calculate interest savings with extra prepayments, and achieve debt freedom faster.
+
+---
+
+## 📥 Download Production App
+
+[![Download APK](https://img.shields.io/badge/Download-Latest%20Android%20APK-1E3C72?style=for-the-badge&logo=android&logoColor=white)](https://github.com/KrishnaP1504/Paywise/releases)
+
+---
+
+## ✨ Key Features
+
+- 🔐 **Secure Authentication:** Email & password authentication + Google Sign-In powered by Firebase Auth.
+- 📊 **Interactive Financial Dashboard:** Real-time breakdown of total outstanding balance, monthly outflows, and principal vs. interest pie charts.
+- 💸 **Smart Payment Ledger:** Record exact EMI & extra prepayments. Prepayments automatically recalculate principal balance and total interest saved.
+- 📅 **Monthly EMI Calendar:** Visual calendar highlighting upcoming EMI due dates, paid transactions, and dynamic payment reminders.
+- 🐷 **Savings & Extra Prepayment Simulator:** Interactive slider tool calculating exact months and interest saved by paying extra each month or applying annual lump-sum bonuses.
+- 📄 **Amortization PDF Export:** Generate and export professional amortization schedule PDFs directly from your phone.
+- 📂 **Smart Loan Categories:** Organizes Home, Car, Education, Business, Gold, and Personal loans with custom category icons.
+- 🔒 **Biometric Security:** Hardware-backed biometric lock screen for personal data privacy.
+- 🗑️ **Data Privacy & Full Account Purge:** In-app account deletion flow removing all user records and database entries.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+| Component | Technology |
+| :--- | :--- |
+| **Frontend Framework** | Flutter (Dart) |
+| **Backend & Auth** | Firebase Authentication, Cloud Firestore & Realtime Database |
+| **State Management** | Provider |
+| **Data Visualizations** | `fl_chart` (Interactive Pie & Line Charts) |
+| **Calendar Engine** | `table_calendar` |
+| **Local Storage & Security** | `flutter_secure_storage` (Keystore/Keychain), `shared_preferences` |
+| **Document Export** | `pdf`, `printing` |
+| **Local Reminders** | `flutter_local_notifications` |
+
+---
+
+## 🚀 Getting Started & Local Setup
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/KrishnaP1504/Paywise.git
+cd Paywise
+```
+
+### 2️⃣ Install Dependencies
+
+```bash
+flutter pub get
+```
+
+### 3️⃣ Firebase & Environment Setup
+
+- Place your `google-services.json` file inside `android/app/`.
+- Copy `.env.example` to `.env` or pass parameters via `--dart-define`:
+  ```bash
+  flutter run --dart-define=FIREBASE_API_KEY=your_key --dart-define=GOOGLE_SERVER_CLIENT_ID=your_client_id
+  ```
+
+### 4️⃣ Run the App
+
+```bash
+flutter run
+```
+
+### 5️⃣ Build Production Release APK
+
+```bash
+flutter build apk --release --split-per-abi
+```
+
+---
+
+## ⚠️ Security & Configuration Notice
+
+> [!IMPORTANT]
+> **Production API Keys & Secrets**: Sensitive configuration values (`.env`, `key.properties`, `release-key.jks`, `google-services.json`) are excluded from git version control. Use `.env.example` to supply custom build keys.
+
+---
+
+## 👨‍💻 Author
+
+**Krishna Pipaliya**
+- GitHub: [@KrishnaP1504](https://github.com/KrishnaP1504)
+- Specialization: Computer Engineering, Flutter & AI/ML Development

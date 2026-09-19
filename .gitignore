@@ -1,0 +1,66 @@
+# ==========================================
+# 📱 PAYWISE - PRODUCTION .GITIGNORE
+# ==========================================
+
+# 1. Firebase Rules, Schemas & Sensitive Configuration
+firebase.json
+firestore.rules
+database.rules.json
+*.rules
+*.rules.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# 2. Keystores, Certificates & Signing Credentials
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+*.mobileprovision
+
+# 3. Environment & Secret Configuration
+.env
+.env.*
+!.env.example
+
+# 4. Flutter & Dart Build Output (Auto-regenerated)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+lib.zip
+
+# 5. iOS Specific Pods & Framework Bloat
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+
+# 6. IDE & Local System Files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 7. Logs, Dumps & Scratch Output
+*.log
+*.tmp
+*.bak
+test_out.txt
+
+# 8. Unused Platform Stubs
+linux/
+macos/
+web/
+windows/
+api/
