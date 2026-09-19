@@ -9,35 +9,35 @@ on:
 jobs:
   build:
     name: Build iOS IPA (Free Sideloading)
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Select Xcode with Bundled iOS SDK
+      - name: Select Xcode 16.4 (Default, has iOS SDK + Swift 6)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+
+      - name: Initialize iOS Platform & Verify SDK
         run: |
-          echo "=== Available Xcode installations ==="
-          ls -d /Applications/Xcode*.app 2>/dev/null || echo "No Xcode apps found"
-          
-          # Prefer Xcode 16.0 on macos-14 (has bundled iOS SDK)
-          # Fall back through available versions
-          SELECTED=""
-          for xc in /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app /Applications/Xcode_15.3.app /Applications/Xcode.app; do
-            if [ -d "$xc" ]; then
-              sudo xcode-select -s "$xc"
-              SELECTED="$xc"
-              break
-            fi
-          done
-          
-          echo "=== Selected: $SELECTED ==="
+          echo "=== Xcode Version ==="
           xcodebuild -version
-          
-          echo "=== Available iOS SDKs ==="
-          xcodebuild -showsdks 2>&1 | grep -i ios || echo "No iOS SDKs listed"
-          
+
+          echo "=== Accept License ==="
+          sudo xcodebuild -license accept
+
+          echo "=== Initialize Simulator Environment ==="
+          xcrun simctl list > /dev/null 2>&1 || true
+
+          echo "=== Available SDKs ==="
+          xcodebuild -showsdks
+
           echo "=== iOS SDK Path ==="
-          xcrun --sdk iphoneos --show-sdk-path 2>&1 || echo "Cannot resolve iphoneos SDK path"
+          xcrun --sdk iphoneos --show-sdk-path || echo "WARNING: iphoneos SDK not found"
+
+          echo "=== Swift Version ==="
+          swift --version
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -65,10 +65,12 @@ jobs:
       - name: Show Detailed Error if Build Fails
         if: failure()
         run: |
-          echo "=== Environment Debug Info ==="
+          echo "=== Environment Debug ==="
           xcodebuild -version
           xcodebuild -showsdks
           xcrun --sdk iphoneos --show-sdk-path 2>&1 || true
+          echo "=== Available Destinations ==="
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -showdestinations 2>&1 || true
           echo "=== Last 200 lines of build log ==="
           find build -name "*.log" -exec tail -n 200 {} \; 2>/dev/null || echo "No log files found"
 
