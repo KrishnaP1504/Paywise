@@ -9,33 +9,35 @@ on:
 jobs:
   build:
     name: Build iOS IPA (Free Sideloading)
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Select Latest Xcode
+      - name: Select Xcode with Bundled iOS SDK
         run: |
-          # List available Xcode installations
+          echo "=== Available Xcode installations ==="
           ls -d /Applications/Xcode*.app 2>/dev/null || echo "No Xcode apps found"
-          # Select the best available Xcode
-          if [ -d "/Applications/Xcode_16.2.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.2.app
-          elif [ -d "/Applications/Xcode_16.1.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.1.app
-          elif [ -d "/Applications/Xcode_16.0.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.0.app
-          elif [ -d "/Applications/Xcode.app" ]; then
-            sudo xcode-select -s /Applications/Xcode.app
-          fi
+          
+          # Prefer Xcode 16.0 on macos-14 (has bundled iOS SDK)
+          # Fall back through available versions
+          SELECTED=""
+          for xc in /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app /Applications/Xcode_15.3.app /Applications/Xcode.app; do
+            if [ -d "$xc" ]; then
+              sudo xcode-select -s "$xc"
+              SELECTED="$xc"
+              break
+            fi
+          done
+          
+          echo "=== Selected: $SELECTED ==="
           xcodebuild -version
-
-      - name: Install iOS Platform SDK
-        run: |
-          echo "=== Downloading iOS Platform SDK ==="
-          xcodebuild -downloadPlatform iOS
-          echo "=== Verifying installed SDKs ==="
-          xcodebuild -showsdks
+          
+          echo "=== Available iOS SDKs ==="
+          xcodebuild -showsdks 2>&1 | grep -i ios || echo "No iOS SDKs listed"
+          
+          echo "=== iOS SDK Path ==="
+          xcrun --sdk iphoneos --show-sdk-path 2>&1 || echo "Cannot resolve iphoneos SDK path"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -63,10 +65,12 @@ jobs:
       - name: Show Detailed Error if Build Fails
         if: failure()
         run: |
-          if [ -f "build/xcodebuild.log" ]; then
-            echo "=== Last 150 lines of xcodebuild.log ==="
-            tail -n 150 build/xcodebuild.log
-          fi
+          echo "=== Environment Debug Info ==="
+          xcodebuild -version
+          xcodebuild -showsdks
+          xcrun --sdk iphoneos --show-sdk-path 2>&1 || true
+          echo "=== Last 200 lines of build log ==="
+          find build -name "*.log" -exec tail -n 200 {} \; 2>/dev/null || echo "No log files found"
 
       - name: Package Payload into Installable IPA
         run: |
