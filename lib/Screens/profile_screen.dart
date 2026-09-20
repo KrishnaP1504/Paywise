@@ -798,8 +798,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           const Center(
             child: Text(
-              "Version 1.2.0",
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              "Version 1.0.0",
+              style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Center(
+            child: Text(
+              "© 2026 PayWise. All rights reserved.",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
         ],
