@@ -59,6 +59,15 @@ jobs:
           pod install --repo-update
           cd ..
 
+      - name: Verify Firebase iOS Config
+        run: |
+          if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then
+            echo "❌ ERROR: ios/Runner/GoogleService-Info.plist is missing!"
+            echo "Download it from Firebase Console → Project Settings → iOS app"
+            exit 1
+          fi
+          echo "✅ GoogleService-Info.plist found"
+
       - name: Build iOS Release (No Codesign)
         run: flutter build ios --release --no-codesign
 

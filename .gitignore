@@ -2,14 +2,15 @@
 # 📱 PAYWISE - PRODUCTION .GITIGNORE
 # ==========================================
 
-# 1. Firebase Rules, Schemas & Sensitive Configuration
+# 1. Firebase Rules, Schemas & Server-side Config
+# NOTE: GoogleService-Info.plist and google-services.json are NOT gitignored.
+# They contain client-side public API keys (embedded in every app binary).
+# Security is enforced by Firebase Security Rules, not by hiding these keys.
 firebase.json
 firestore.rules
 database.rules.json
 *.rules
 *.rules.json
-**/google-services.json
-**/GoogleService-Info.plist
 
 # 2. Keystores, Certificates & Signing Credentials
 android/key.properties
