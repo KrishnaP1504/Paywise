@@ -338,32 +338,13 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                   itemCount: transactions.length,
                   itemBuilder: (context, index) {
                     final t = transactions[index];
-                    final bool isExtra = t.amount > loan.emiAmount + 100;
-
-                    return Dismissible(
-                      key: ValueKey(t.id),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
-                          ),
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.delete, color: Colors.white),
-                            SizedBox(height: 2),
-                            Text('Delete', style: TextStyle(color: Colors.white, fontSize: 11)),
-                          ],
-                        ),
-                      ),
-                      confirmDismiss: (_) async {
+                    return _TransactionItemTile(
+                      key: ValueKey("tx_${t.id}"),
+                      transaction: t,
+                      loan: loan,
+                      currency: currency,
+                      dateFormat: dateFormat,
+                      onDeleteConfirm: () async {
                         return await GlassTheme.showGlassDialog<bool>(
                           context: context,
                           builder: (ctx) => GlassAlertDialog(
@@ -390,7 +371,7 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                           ),
                         ) ?? false;
                       },
-                      onDismissed: (_) async {
+                      onDeleted: () async {
                         setState(() => _deletedIds.add(t.id));
                         await Provider.of<LoanProvider>(context, listen: false)
                             .deleteTransaction(loan.id, t.id);
@@ -402,53 +383,8 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                           );
                         }
                       },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: GlassTheme.cardDecoration(context, radius: 16),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: ListTile(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                dense: true,
-                              leading: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: GlassTheme.iconBoxDecoration(
-                                  context,
-                                  color: isExtra ? const Color(0xFF2E7D32) : Colors.indigo,
-                                  radius: 18,
-                                ),
-                                child: Icon(
-                                  isExtra ? Icons.star_rounded : Icons.check_circle_rounded,
-                                  color: isExtra ? const Color(0xFF2E7D32) : Colors.indigo,
-                                  size: 18,
-                                ),
-                              ),
-                              title: Text(currency.format(t.amount), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                              subtitle: Text(dateFormat.format(t.date)),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (isExtra)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: GlassTheme.pillDecoration(
-                                        context,
-                                        color: const Color(0xFF2E7D32),
-                                        radius: 6,
-                                      ),
-                                      child: const Text('Extra Payment',
-                                          style: TextStyle(fontSize: 10, color: Color(0xFF2E7D32), fontWeight: FontWeight.bold)),
-                                    ),
-                                  const SizedBox(width: 4),
-                                  Icon(Icons.swipe_left_rounded, size: 14, color: Colors.grey[400]),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                    );
+                  },
                     );
                   },
                 ),
@@ -1041,6 +977,148 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class _TransactionItemTile extends StatefulWidget {
+  final TransactionModel transaction;
+  final LoanModel loan;
+  final NumberFormat currency;
+  final DateFormat dateFormat;
+  final Future<bool?> Function() onDeleteConfirm;
+  final void Function() onDeleted;
+
+  const _TransactionItemTile({
+    super.key,
+    required this.transaction,
+    required this.loan,
+    required this.currency,
+    required this.dateFormat,
+    required this.onDeleteConfirm,
+    required this.onDeleted,
+  });
+
+  @override
+  State<_TransactionItemTile> createState() => _TransactionItemTileState();
+}
+
+class _TransactionItemTileState extends State<_TransactionItemTile> {
+  bool _isSwiping = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.transaction;
+    final loan = widget.loan;
+    final currency = widget.currency;
+    final dateFormat = widget.dateFormat;
+    final bool isExtra = t.amount > loan.emiAmount + 100;
+
+    final BorderRadius cardRadius = _isSwiping
+        ? const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            topRight: Radius.zero,
+            bottomRight: Radius.zero,
+          )
+        : BorderRadius.circular(16);
+
+    final card = Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: GlassTheme.cardDecoration(
+        context,
+        radius: 16,
+        customBorderRadius: cardRadius,
+      ),
+      child: ClipRRect(
+        borderRadius: cardRadius,
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: cardRadius),
+          dense: true,
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: GlassTheme.iconBoxDecoration(
+              context,
+              color: isExtra ? const Color(0xFF2E7D32) : Colors.indigo,
+              radius: 18,
+            ),
+            child: Icon(
+              isExtra ? Icons.star_rounded : Icons.check_circle_rounded,
+              color: isExtra ? const Color(0xFF2E7D32) : Colors.indigo,
+              size: 18,
+            ),
+          ),
+          title: Text(
+            currency.format(t.amount),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          subtitle: Text(dateFormat.format(t.date)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isExtra)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: GlassTheme.pillDecoration(
+                    context,
+                    color: const Color(0xFF2E7D32),
+                    radius: 6,
+                  ),
+                  child: const Text(
+                    'Extra Payment',
+                    style: TextStyle(fontSize: 10, color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
+                  ),
+                ),
+              const SizedBox(width: 4),
+              Icon(Icons.swipe_left_rounded, size: 14, color: Colors.grey[400]),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return Dismissible(
+      key: ValueKey("tx_${t.id}"),
+      direction: DismissDirection.endToStart,
+      onUpdate: (details) {
+        final bool swiping = details.progress > 0.002;
+        if (swiping != _isSwiping) {
+          setState(() => _isSwiping = swiping);
+        }
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: const BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete, color: Colors.white),
+            SizedBox(height: 2),
+            Text('Delete', style: TextStyle(color: Colors.white, fontSize: 11)),
+          ],
+        ),
+      ),
+      confirmDismiss: (_) async {
+        final bool? confirmed = await widget.onDeleteConfirm();
+        if (confirmed != true) {
+          if (mounted) setState(() => _isSwiping = false);
+          return false;
+        }
+        return true;
+      },
+      onDismissed: (_) {
+        widget.onDeleted();
+      },
+      child: card,
     );
   }
 }

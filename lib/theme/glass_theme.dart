@@ -9,6 +9,7 @@ class GlassTheme {
   static BoxDecoration cardDecoration(
     BuildContext context, {
     double radius = 20,
+    BorderRadius? customBorderRadius,
     Color? customBg,
     Border? customBorder,
     List<BoxShadow>? customShadow,
@@ -32,7 +33,7 @@ class GlassTheme {
                       Colors.white.withValues(alpha: 0.62),
                     ],
             ),
-      borderRadius: BorderRadius.circular(radius),
+      borderRadius: customBorderRadius ?? BorderRadius.circular(radius),
       border: customBorder ??
           Border.all(
             color: isDark

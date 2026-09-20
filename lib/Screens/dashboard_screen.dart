@@ -744,180 +744,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color softIconBgColor,
     bool isDark,
   ) {
-    double progress = 0;
-    if (loan.principalAmount > 0) {
-      progress = (loan.principalAmount - loan.outstandingBalance) / loan.principalAmount;
-    }
-    progress = progress.clamp(0.0, 1.0);
-
-    final IconData categoryIcon = loan.categoryIcon;
-
-    final card = Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: GlassTheme.cardDecoration(context, radius: 20),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, '/loan_details', arguments: loan),
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Category Icon
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: GlassTheme.iconBoxDecoration(context, color: Colors.indigo, radius: 12),
-                  child: Icon(categoryIcon, color: Colors.indigo, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        loan.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        loan.lenderName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _currencyFormat.format(loan.outstandingBalance),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'EMI: ${_currencyFormat.format(loan.emiAmount)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: GlassTheme.pillDecoration(
-                    context,
-                    color: loan.isPaidOff ? const Color(0xFF2E7D32) : Colors.indigo,
-                    radius: 8,
-                  ),
-                  child: Text(
-                    loan.isPaidOff ? 'Closed' : 'Active',
-                    style: TextStyle(
-                      color: loan.isPaidOff
-                          ? const Color(0xFF2E7D32)
-                          : (isDark ? const Color(0xFF8C9EFF) : const Color(0xFF283593)),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: _buildEmiDueBadge(loan, isDark),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  loan.isPaidOff ? const Color(0xFF10B981) : Colors.indigo,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (!swipeEnabled || loan.isPaidOff) return card;
-
-    return Dismissible(
-      key: ValueKey(loan.id),
-      background: Container(
-        alignment: Alignment.centerLeft,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.only(left: 24),
-        decoration: const BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            bottomLeft: Radius.circular(20),
-          ),
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.payment, color: Colors.white, size: 28),
-            SizedBox(height: 4),
-            Text('Pay EMI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-      secondaryBackground: Container(
-        alignment: Alignment.centerRight,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.only(right: 24),
-        decoration: const BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(20),
-            bottomRight: Radius.circular(20),
-          ),
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.delete, color: Colors.white, size: 28),
-            SizedBox(height: 4),
-            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-      confirmDismiss: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          _showQuickPayDialog(context, loan);
-          return false;
-        } else if (direction == DismissDirection.endToStart) {
-          final bool? shouldDelete = await _showDeleteConfirmationDialog(context, loan);
-          return shouldDelete == true;
-        }
-        return false;
+    return _DashboardLoanCardItem(
+      key: ValueKey("loan_card_${loan.id}"),
+      loan: loan,
+      swipeEnabled: swipeEnabled,
+      cardBgColor: cardBgColor,
+      softIconBgColor: softIconBgColor,
+      isDark: isDark,
+      currencyFormat: _currencyFormat,
+      onQuickPay: (l) => _showQuickPayDialog(context, l),
+      onDeleteConfirm: (l) => _showDeleteConfirmationDialog(context, l),
+      onDeleted: (l) {
+        UndoToastManager.showUndoDeleteToast(
+          context: context,
+          loan: l,
+        );
       },
-      onDismissed: (direction) {
-        if (direction == DismissDirection.endToStart) {
-          UndoToastManager.showUndoDeleteToast(
-            context: context,
-            loan: loan,
-          );
-        }
-      },
-      child: card,
+      buildEmiDueBadge: _buildEmiDueBadge,
     );
   }
 
@@ -1274,4 +1117,257 @@ class _DashboardScreenState extends State<DashboardScreen> {
 },
 );
 }
+}
+
+class _DashboardLoanCardItem extends StatefulWidget {
+  final LoanModel loan;
+  final bool swipeEnabled;
+  final Color cardBgColor;
+  final Color softIconBgColor;
+  final bool isDark;
+  final NumberFormat currencyFormat;
+  final void Function(LoanModel) onQuickPay;
+  final Future<bool?> Function(LoanModel) onDeleteConfirm;
+  final void Function(LoanModel) onDeleted;
+  final Widget Function(LoanModel, bool) buildEmiDueBadge;
+
+  const _DashboardLoanCardItem({
+    super.key,
+    required this.loan,
+    required this.swipeEnabled,
+    required this.cardBgColor,
+    required this.softIconBgColor,
+    required this.isDark,
+    required this.currencyFormat,
+    required this.onQuickPay,
+    required this.onDeleteConfirm,
+    required this.onDeleted,
+    required this.buildEmiDueBadge,
+  });
+
+  @override
+  State<_DashboardLoanCardItem> createState() => _DashboardLoanCardItemState();
+}
+
+class _DashboardLoanCardItemState extends State<_DashboardLoanCardItem> {
+  DismissDirection? _swipeDirection;
+
+  @override
+  Widget build(BuildContext context) {
+    final loan = widget.loan;
+    final isDark = widget.isDark;
+
+    double progress = 0;
+    if (loan.principalAmount > 0) {
+      progress = (loan.principalAmount - loan.outstandingBalance) / loan.principalAmount;
+    }
+    progress = progress.clamp(0.0, 1.0);
+
+    final IconData categoryIcon = loan.categoryIcon;
+
+    // Dynamic border radius: when swiping, the edge that touches the swipe action
+    // becomes completely square (Radius.zero) so there is no gap at upper/bottom corners.
+    final BorderRadius cardRadius;
+    if (_swipeDirection == DismissDirection.endToStart) {
+      // Swiping right-to-left: revealing "Delete" on the right.
+      // The right edge meets the delete action, so the right corners are square!
+      cardRadius = const BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomLeft: Radius.circular(20),
+        topRight: Radius.zero,
+        bottomRight: Radius.zero,
+      );
+    } else if (_swipeDirection == DismissDirection.startToEnd) {
+      // Swiping left-to-right: revealing "Pay EMI" on the left.
+      // The left edge meets the pay action, so the left corners are square!
+      cardRadius = const BorderRadius.only(
+        topLeft: Radius.zero,
+        bottomLeft: Radius.zero,
+        topRight: Radius.circular(20),
+        bottomRight: Radius.circular(20),
+      );
+    } else {
+      cardRadius = BorderRadius.circular(20);
+    }
+
+    final card = Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: GlassTheme.cardDecoration(
+        context,
+        radius: 20,
+        customBorderRadius: cardRadius,
+      ),
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, '/loan_details', arguments: loan),
+        borderRadius: cardRadius,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Category Icon
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: GlassTheme.iconBoxDecoration(context, color: Colors.indigo, radius: 12),
+                  child: Icon(categoryIcon, color: Colors.indigo, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        loan.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        loan.lenderName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      widget.currencyFormat.format(loan.outstandingBalance),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'EMI: ${widget.currencyFormat.format(loan.emiAmount)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: GlassTheme.pillDecoration(
+                    context,
+                    color: loan.isPaidOff ? const Color(0xFF2E7D32) : Colors.indigo,
+                    radius: 8,
+                  ),
+                  child: Text(
+                    loan.isPaidOff ? 'Closed' : 'Active',
+                    style: TextStyle(
+                      color: loan.isPaidOff
+                          ? const Color(0xFF2E7D32)
+                          : (isDark ? const Color(0xFF8C9EFF) : const Color(0xFF283593)),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: widget.buildEmiDueBadge(loan, isDark),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  loan.isPaidOff ? const Color(0xFF10B981) : Colors.indigo,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!widget.swipeEnabled || loan.isPaidOff) return card;
+
+    return Dismissible(
+      key: ValueKey("dismiss_${loan.id}"),
+      onUpdate: (details) {
+        final DismissDirection? newDir = details.progress > 0.002 ? details.direction : null;
+        if (newDir != _swipeDirection) {
+          setState(() => _swipeDirection = newDir);
+        }
+      },
+      background: Container(
+        alignment: Alignment.centerLeft,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(left: 24),
+        decoration: const BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            bottomLeft: Radius.circular(20),
+          ),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.payment, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text('Pay EMI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+      secondaryBackground: Container(
+        alignment: Alignment.centerRight,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(right: 24),
+        decoration: const BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          widget.onQuickPay(widget.loan);
+          if (mounted) setState(() => _swipeDirection = null);
+          return false;
+        } else if (direction == DismissDirection.endToStart) {
+          final bool? shouldDelete = await widget.onDeleteConfirm(widget.loan);
+          if (shouldDelete != true) {
+            if (mounted) setState(() => _swipeDirection = null);
+            return false;
+          }
+          return true;
+        }
+        return false;
+      },
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          widget.onDeleted(widget.loan);
+        }
+      },
+      child: card,
+    );
+  }
 }
