@@ -144,25 +144,20 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
+                    child: GlassButton(
+                      isSecondary: true,
+                      height: 44,
+                      radius: 12,
                       onPressed: () => Navigator.pop(dialogCtx),
                       child: const Text("Cancel"),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: const Color(0xFF3B4CCA),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 2,
-                      ),
+                    child: GlassButton(
+                      height: 44,
+                      radius: 12,
+                      isLoading: isResetting,
                       onPressed: isResetting
                           ? null
                           : () async {
@@ -584,60 +579,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 14),
 
                             // ── LOGIN BUTTON ──
-                            Container(
+                            GlassButton(
                               width: double.infinity,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                gradient: LinearGradient(
-                                  colors: isDark
-                                      ? const [Color(0xFF6366F1), Color(0xFF4F46E5)]
-                                      : const [Color(0xFF1E3C72), Color(0xFF2A5298)],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
+                              height: 50,
+                              radius: 16,
+                              isLoading: _isLoading,
+                              onPressed: _isLoading ? null : _login,
+                              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                              child: const Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
                                 ),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: isDark ? 0.35 : 0.50),
-                                  width: 1.2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isDark ? const Color(0xFF6366F1) : const Color(0xFF1E3C72))
-                                        .withValues(alpha: 0.38),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 6),
-                                  )
-                                ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _login,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
-                                      )
-                                    : const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "LOGIN",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 1.2,
-                                            ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
-                                        ],
-                                      ),
                               ),
                             ),
 

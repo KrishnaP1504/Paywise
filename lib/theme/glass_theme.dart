@@ -25,19 +25,20 @@ class GlassTheme {
               end: Alignment.bottomRight,
               colors: isDark
                   ? [
-                      const Color(0xFF222438).withValues(alpha: 0.82),
-                      const Color(0xFF141626).withValues(alpha: 0.58),
+                      const Color(0xFF242846).withValues(alpha: 0.68),
+                      const Color(0xFF171A2E).withValues(alpha: 0.50),
+                      const Color(0xFF0F1120).withValues(alpha: 0.38),
                     ]
                   : [
-                      Colors.white.withValues(alpha: 0.90),
-                      Colors.white.withValues(alpha: 0.62),
+                      Colors.white.withValues(alpha: 0.88),
+                      Colors.white.withValues(alpha: 0.60),
                     ],
             ),
       borderRadius: customBorderRadius ?? BorderRadius.circular(radius),
       border: customBorder ??
           Border.all(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.16)
+                ? Colors.white.withValues(alpha: 0.24)
                 : Colors.white.withValues(alpha: 0.92),
             width: isDark ? 1.2 : 1.5,
           ),
@@ -45,20 +46,172 @@ class GlassTheme {
           [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.42)
+                  ? Colors.black.withValues(alpha: 0.48)
                   : const Color(0xFF4F46E5).withValues(alpha: 0.08),
-              blurRadius: 22,
+              blurRadius: 24,
               offset: const Offset(0, 8),
               spreadRadius: -2,
             ),
             BoxShadow(
               color: isDark
-                  ? const Color(0xFF6366F1).withValues(alpha: 0.07)
+                  ? const Color(0xFF6366F1).withValues(alpha: 0.16)
                   : Colors.black.withValues(alpha: 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              blurRadius: 16,
+              offset: const Offset(0, 3),
+              spreadRadius: -2,
             ),
+            if (isDark)
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.04),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
           ],
+    );
+  }
+
+  /// Translucent frosted glass button decoration with specular hairline edge
+  /// and soft ambient colored glow (avoids overly bright/opaque neon appearance).
+  static BoxDecoration buttonDecoration(
+    BuildContext context, {
+    Color? color,
+    double radius = 16,
+    bool isDanger = false,
+    bool isSuccess = false,
+    bool isSecondary = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color accent = isDanger
+        ? const Color(0xFFDC2626)
+        : isSuccess
+            ? const Color(0xFF059669)
+            : (color ?? (isDark ? const Color(0xFF6366F1) : const Color(0xFF1E3C72)));
+
+    if (isSecondary) {
+      return BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF262A44).withValues(alpha: 0.55),
+                  const Color(0xFF171A2E).withValues(alpha: 0.35),
+                ]
+              : [
+                  Colors.white.withValues(alpha: 0.65),
+                  const Color(0xFFF1F5F9).withValues(alpha: 0.45),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.18)
+              : Colors.black.withValues(alpha: 0.10),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      );
+    }
+
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isDark
+            ? [
+                accent.withValues(alpha: 0.46),
+                accent.withValues(alpha: 0.26),
+              ]
+            : [
+                accent.withValues(alpha: 0.90),
+                accent.withValues(alpha: 0.78),
+              ],
+      ),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.26)
+            : Colors.white.withValues(alpha: 0.65),
+        width: 1.2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: isDark
+              ? Colors.black.withValues(alpha: 0.35)
+              : accent.withValues(alpha: 0.20),
+          blurRadius: 14,
+          offset: const Offset(0, 5),
+          spreadRadius: -2,
+        ),
+        BoxShadow(
+          color: accent.withValues(alpha: isDark ? 0.22 : 0.12),
+          blurRadius: 16,
+          offset: const Offset(0, 3),
+        ),
+        if (isDark)
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.08),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+      ],
+    );
+  }
+
+  /// Glassy button style helper for standard ElevatedButton/OutlinedButton
+  static ButtonStyle glassButtonStyle(
+    BuildContext context, {
+    Color? color,
+    double radius = 14,
+    bool isDanger = false,
+    bool isSuccess = false,
+    bool isSecondary = false,
+    EdgeInsetsGeometry? padding,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color accent = isDanger
+        ? const Color(0xFFDC2626)
+        : isSuccess
+            ? const Color(0xFF059669)
+            : (color ?? (isDark ? const Color(0xFF6366F1) : const Color(0xFF1E3C72)));
+
+    final Color bg = isSecondary
+        ? (isDark
+            ? const Color(0xFF262A44).withValues(alpha: 0.45)
+            : Colors.white.withValues(alpha: 0.55))
+        : (isDark
+            ? accent.withValues(alpha: 0.38)
+            : accent.withValues(alpha: 0.88));
+
+    final Color borderCol = isDark
+        ? (isSecondary
+            ? Colors.white.withValues(alpha: 0.18)
+            : Colors.white.withValues(alpha: 0.26))
+        : (isSecondary
+            ? Colors.black.withValues(alpha: 0.12)
+            : Colors.white.withValues(alpha: 0.60));
+
+    return ElevatedButton.styleFrom(
+      backgroundColor: bg,
+      foregroundColor: isSecondary
+          ? (isDark ? Colors.white : const Color(0xFF1E293B))
+          : Colors.white,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+        side: BorderSide(color: borderCol, width: 1.1),
+      ),
     );
   }
 
@@ -378,26 +531,45 @@ class GlassBackground extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C0E17) : const Color(0xFFF6F8FC),
+        gradient: isDark
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0F111E), // Deep midnight indigo slate
+                  Color(0xFF090A12), // Cosmic obsidian
+                  Color(0xFF0C0E19), // Deep twilight navy
+                ],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF8FAFC),
+                  Color(0xFFF1F5F9),
+                  Color(0xFFEDF2F7),
+                ],
+              ),
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Top-right glowing ambient indigo orb
+          // 1. Top-right radiant Indigo/Electric-Blue Orb
           Positioned(
-            top: -60,
-            right: -60,
+            top: -40,
+            right: -50,
             child: IgnorePointer(
               child: Container(
-                width: 250,
-                height: 250,
+                width: 340,
+                height: 340,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: isDark
                         ? [
-                            const Color(0xFF3949AB).withValues(alpha: 0.26),
-                            const Color(0xFF3949AB).withValues(alpha: 0.0),
+                            const Color(0xFF4F46E5).withValues(alpha: 0.32),
+                            const Color(0xFF3730A3).withValues(alpha: 0.14),
+                            Colors.transparent,
                           ]
                         : [
                             const Color(0xFF818CF8).withValues(alpha: 0.28),
@@ -408,50 +580,103 @@ class GlassBackground extends StatelessWidget {
               ),
             ),
           ),
-          // Mid-left subtle ambient purple orb
+          // 2. Upper-left subtle Cyan Aurora Orb
           Positioned(
-            top: 240,
-            left: -80,
+            top: 120,
+            left: -60,
             child: IgnorePointer(
               child: Container(
-                width: 270,
-                height: 270,
+                width: 260,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: isDark
                         ? [
-                            const Color(0xFF673AB7).withValues(alpha: 0.18),
-                            const Color(0xFF673AB7).withValues(alpha: 0.0),
+                            const Color(0xFF06B6D4).withValues(alpha: 0.18),
+                            const Color(0xFF0284C7).withValues(alpha: 0.08),
+                            Colors.transparent,
                           ]
                         : [
-                            const Color(0xFFC084FC).withValues(alpha: 0.22),
-                            const Color(0xFFC084FC).withValues(alpha: 0.0),
+                            const Color(0xFF38BDF8).withValues(alpha: 0.18),
+                            Colors.transparent,
                           ],
                   ),
                 ),
               ),
             ),
           ),
-          // Bottom-right subtle ambient teal orb
+          // 3. Mid-right Luminous Violet Aurora Orb
           Positioned(
-            bottom: 40,
-            right: -60,
+            top: 360,
+            right: -70,
             child: IgnorePointer(
               child: Container(
-                width: 230,
-                height: 230,
+                width: 320,
+                height: 320,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: isDark
                         ? [
-                            const Color(0xFF00897B).withValues(alpha: 0.15),
-                            const Color(0xFF00897B).withValues(alpha: 0.0),
+                            const Color(0xFF7C3AED).withValues(alpha: 0.20),
+                            const Color(0xFF6D28D9).withValues(alpha: 0.08),
+                            Colors.transparent,
                           ]
                         : [
-                            const Color(0xFF38BDF8).withValues(alpha: 0.20),
-                            const Color(0xFF38BDF8).withValues(alpha: 0.0),
+                            const Color(0xFFC084FC).withValues(alpha: 0.20),
+                            Colors.transparent,
+                          ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // 4. Lower-left Emerald/Teal Subtle Ambient Glow Orb
+          Positioned(
+            bottom: 140,
+            left: -50,
+            child: IgnorePointer(
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: isDark
+                        ? [
+                            const Color(0xFF059669).withValues(alpha: 0.15),
+                            const Color(0xFF0D9488).withValues(alpha: 0.05),
+                            Colors.transparent,
+                          ]
+                        : [
+                            const Color(0xFF34D399).withValues(alpha: 0.15),
+                            Colors.transparent,
+                          ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // 5. Bottom-right Deep Indigo Orb
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: IgnorePointer(
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: isDark
+                        ? [
+                            const Color(0xFF4338CA).withValues(alpha: 0.24),
+                            Colors.transparent,
+                          ]
+                        : [
+                            const Color(0xFF818CF8).withValues(alpha: 0.16),
+                            Colors.transparent,
                           ],
                   ),
                 ),
@@ -783,6 +1008,139 @@ class GlassAlertDialog extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(colors: colors),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A premium frosted glass button with optical blur, specular reflection,
+/// ambient glow, and translucent tinted glass surface.
+class GlassButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+  final Widget? icon;
+  final Color? color;
+  final double radius;
+  final double? width;
+  final double height;
+  final EdgeInsetsGeometry? padding;
+  final bool isSecondary;
+  final bool isDanger;
+  final bool isSuccess;
+  final bool isLoading;
+  final double fontSize;
+
+  const GlassButton({
+    super.key,
+    required this.onPressed,
+    required this.child,
+    this.icon,
+    this.color,
+    this.radius = 16,
+    this.width,
+    this.height = 48,
+    this.padding,
+    this.isSecondary = false,
+    this.isDanger = false,
+    this.isSuccess = false,
+    this.isLoading = false,
+    this.fontSize = 14,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isEnabled = onPressed != null && !isLoading;
+
+    final decoration = GlassTheme.buttonDecoration(
+      context,
+      color: color,
+      radius: radius,
+      isDanger: isDanger,
+      isSuccess: isSuccess,
+      isSecondary: isSecondary,
+    );
+
+    return Opacity(
+      opacity: isEnabled ? 1.0 : 0.55,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: decoration,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Stack(
+              children: [
+                // Top Specular Bevel Rim Highlight (VisionOS style reflection)
+                Positioned(
+                  top: 0,
+                  left: radius * 0.3,
+                  right: radius * 0.3,
+                  height: 1.2,
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0.0),
+                            Colors.white.withValues(alpha: isDark ? 0.45 : 0.70),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: isEnabled ? onPressed : null,
+                    borderRadius: BorderRadius.circular(radius),
+                    splashColor: Colors.white.withValues(alpha: 0.12),
+                    highlightColor: Colors.white.withValues(alpha: 0.06),
+                    child: Padding(
+                      padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
+                      child: Center(
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (icon != null) ...[
+                                    icon!,
+                                    const SizedBox(width: 8),
+                                  ],
+                                  DefaultTextStyle(
+                                    style: TextStyle(
+                                      color: isSecondary
+                                          ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                                          : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: fontSize,
+                                      letterSpacing: 0.3,
+                                    ),
+                                    child: child,
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

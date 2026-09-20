@@ -142,18 +142,16 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                       ],
                     ),
                   ),
-                  ElevatedButton(
+                  GlassButton(
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => LoanAnalysisScreen(loan: loan)),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0F766E),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    color: Colors.white,
+                    isSecondary: true,
+                    height: 36,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    radius: 10,
                     child: const Text(
                       "Analysis",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -504,6 +502,7 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
   }
 
   void _confirmDelete(BuildContext context, LoanModel loan) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     GlassTheme.showGlassDialog(
       context: context,
       builder: (ctx) => GlassAlertDialog(
@@ -522,13 +521,15 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700]),
             ),
+          ),
+          GlassButton(
+            height: 38,
+            radius: 12,
+            isDanger: true,
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pop(context);
@@ -819,54 +820,48 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                   const SizedBox(height: 18),
                   
                   // ── CONFIRM PAYMENT BUTTON ──
-                  SizedBox(
+                  GlassButton(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (formKey.currentState!.validate()) {
-                          double amount = AppCurrency.parseClean(amountController.text) ?? 0.0;
-                          Navigator.pop(context);
+                    height: 52,
+                    radius: 16,
+                    isSuccess: true,
+                    child: const Text("CONFIRM PAYMENT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                    onPressed: () async {
+                      if (formKey.currentState!.validate()) {
+                        double amount = AppCurrency.parseClean(amountController.text) ?? 0.0;
+                        Navigator.pop(context);
+                        
+                        try {
+                          var result = await Provider.of<LoanProvider>(context, listen: false)
+                              .recordPayment(loan, amount, selectedPaymentDate);
                           
-                          try {
-                            var result = await Provider.of<LoanProvider>(context, listen: false)
-                                .recordPayment(loan, amount, selectedPaymentDate);
-                            
-                            if (context.mounted) {
-                              if (result['isPaidOff'] == true) {
-                                _showCelebrationDialog(context, result, currency);
-                              } else {
-                                UndoToastManager.showSuccessToast(
-                                  context: context,
-                                  title: "Payment Recorded! 🎉",
-                                  subtitle: "Payment recorded for ${DateFormat('MMM dd, yyyy').format(selectedPaymentDate)}.",
-                                );
-                              }
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              final cleanMsg = e
-                                  .toString()
-                                  .replaceAll('Exception: ', '')
-                                  .replaceAll('Error: ', '')
-                                  .trim();
-                              UndoToastManager.showErrorToast(
+                          if (context.mounted) {
+                            if (result['isPaidOff'] == true) {
+                              _showCelebrationDialog(context, result, currency);
+                            } else {
+                              UndoToastManager.showSuccessToast(
                                 context: context,
-                                title: "Payment Error",
-                                subtitle: cleanMsg,
+                                title: "Payment Recorded! 🎉",
+                                subtitle: "Payment recorded for ${DateFormat('MMM dd, yyyy').format(selectedPaymentDate)}.",
                               );
                             }
                           }
+                        } catch (e) {
+                          if (context.mounted) {
+                            final cleanMsg = e
+                                .toString()
+                                .replaceAll('Exception: ', '')
+                                .replaceAll('Error: ', '')
+                                .trim();
+                            UndoToastManager.showErrorToast(
+                              context: context,
+                              title: "Payment Error",
+                              subtitle: cleanMsg,
+                            );
+                          }
                         }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 4,
-                      ),
-                      child: const Text("CONFIRM PAYMENT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
-                    ),
+                      }
+                    },
                   ),
 
                   const SizedBox(height: 10),
@@ -962,18 +957,14 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
             ],
           ),
           actions: [
-            SizedBox(
+            GlassButton(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text("AWESOME!"),
-              ),
-            )
+              height: 44,
+              radius: 14,
+              isSuccess: true,
+              onPressed: () => Navigator.pop(context),
+              child: const Text("AWESOME!"),
+            ),
           ],
         );
       },

@@ -82,7 +82,7 @@ Accidental account deletion can permanently destroy years of carefully curated f
 ## 4. Design System, Typography & Global Visual Tokens
 
 ### Design Philosophy
-PayWise is styled with an elevated **Deep Navy Blue & Royal Blue Glassmorphism** visual language. Frosted translucent surfaces, multi-layered depth, anti-glare backdrops, and high-contrast typography combine aesthetic elegance with financial clarity.
+PayWise is styled with an elevated **Deep Navy Blue & Royal Blue Glassmorphism** visual language. Frosted translucent surfaces, multi-layered depth, anti-glare backdrops, and high-contrast typography combine aesthetic elegance with financial clarity. In Dark Mode, the interface is enriched with an atmospheric cosmic mesh canvas and multi-layered luminous aurora orbs (Indigo, Electric Blue, Cyan, Luminous Violet, and Emerald) that shine through translucent cards, creating authentic optical depth. All interactive buttons employ a dedicated frosted GlassButton design system featuring optical diffusion, hairline specular rim borders, top bevel reflections, and soft ambient glow, eliminating harsh neon glare.
 
 ### Primary Color Tokens
 
@@ -98,9 +98,9 @@ PayWise is styled with an elevated **Deep Navy Blue & Royal Blue Glassmorphism**
 | **Light Canvas Background** | `#F8F9FA` / `#F7F8FE` | Light mode surface; crisp, glare-free off-white backdrop for comfortable daytime viewing. |
 | **Light Card Surface** | `#FFFFFF` | Pure white elevated cards with subtle ambient shadows. |
 | **Light Soft Container** | `#EEF2FF` / `#EBF1F9` | Soft navy/indigo container backgrounds for icons and chips. |
-| **Dark Obsidian Background** | `#121212` / `#0D0F1B` | Dark mode surface; deep OLED-friendly black backdrop minimizing battery drain and eye strain. |
-| **Dark Card Surface** | `#1E1E1E` / `#16192A` | Elevated dark gray cards with translucent frosted glass borders. |
-| **Dark Soft Container** | `#1E3C72` with 25% opacity | Translucent navy container backgrounds for dark mode icon boxes and chips. |
+| **Dark Cosmic Mesh Background** | `#0F111E` to `#090A12` | Dark mode surface; deep midnight cosmic mesh canvas layered with luminous aurora orbs for authentic glass refraction. |
+| **Dark Translucent Glass Card** | Specular 3-Stop Glass Gradient | Specular frosted glass with 24% white hairline edge, ambient indigo aura, and subtle top reflection. |
+| **GlassButton Design System** | Frosted Translucent Surface | Optically diffused glass buttons with hairline specular rim borders, top bevel highlights, and soft ambient glow (eliminates harsh neon brightness). |
 
 ### Functional Banner & Toast Tokens
 

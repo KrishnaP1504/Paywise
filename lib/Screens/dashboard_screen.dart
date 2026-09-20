@@ -720,16 +720,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
+          GlassButton(
             onPressed: () => Navigator.pushNamed(context, '/loan_history'),
-            icon: const Icon(Icons.history_rounded, size: 18),
-            label: const Text("View Loan History", style: TextStyle(fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F766E),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
+            icon: const Icon(Icons.history_rounded, size: 18, color: Colors.white),
+            color: const Color(0xFF0F766E),
+            height: 44,
+            radius: 14,
+            child: const Text("View Loan History"),
           ),
         ],
       ),
@@ -765,6 +762,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<bool?> _showDeleteConfirmationDialog(BuildContext context, LoanModel loan) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GlassTheme.showGlassDialog<bool>(
       context: context,
       builder: (ctx) => GlassAlertDialog(
@@ -783,14 +782,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700]),
             ),
+          ),
+          GlassButton(
+            height: 38,
+            radius: 12,
+            isDanger: true,
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Delete'),
           ),
@@ -1060,46 +1060,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        SizedBox(
+                        GlassButton(
                           width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              elevation: 4,
-                            ),
-                            onPressed: () async {
-                              if (formKey.currentState!.validate()) {
-                                final amount = AppCurrency.parseClean(amountCtrl.text) ?? 0.0;
-                                Navigator.pop(ctx);
-                                try {
-                                  await Provider.of<LoanProvider>(context, listen: false)
-                                      .recordPayment(loan, amount, DateTime.now());
-                                  if (context.mounted) {
-                                    UndoToastManager.showSuccessToast(
-                                      context: context,
-                                      title: "Payment Recorded! 🎉",
-                                      subtitle: "${AppCurrency.format(amount)} logged for ${loan.title.isNotEmpty ? loan.title : loan.category}.",
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    final cleanMsg = e.toString().replaceAll('Exception: ', '').replaceAll('Error: ', '').trim();
-                                    UndoToastManager.showErrorToast(
-                                      context: context,
-                                      title: "Payment Failed",
-                                      subtitle: cleanMsg,
-                                    );
-                                  }
+                          height: 50,
+                          radius: 16,
+                          isSuccess: true,
+                          onPressed: () async {
+                            if (formKey.currentState!.validate()) {
+                              final amount = AppCurrency.parseClean(amountCtrl.text) ?? 0.0;
+                              Navigator.pop(ctx);
+                              try {
+                                await Provider.of<LoanProvider>(context, listen: false)
+                                    .recordPayment(loan, amount, DateTime.now());
+                                if (context.mounted) {
+                                  UndoToastManager.showSuccessToast(
+                                    context: context,
+                                    title: "Payment Recorded! 🎉",
+                                    subtitle: "${AppCurrency.format(amount)} logged for ${loan.title.isNotEmpty ? loan.title : loan.category}.",
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  final cleanMsg = e.toString().replaceAll('Exception: ', '').replaceAll('Error: ', '').trim();
+                                  UndoToastManager.showErrorToast(
+                                    context: context,
+                                    title: "Payment Failed",
+                                    subtitle: cleanMsg,
+                                  );
                                 }
                               }
-                            },
-                            child: const Text(
-                              'CONFIRM PAYMENT',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5),
-                            ),
+                            }
+                          },
+                          child: const Text(
+                            'CONFIRM PAYMENT',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5),
                           ),
                         ),
                         const SizedBox(height: 16),

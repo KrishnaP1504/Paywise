@@ -478,24 +478,19 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                   const SizedBox(height: 14),
 
                   // Option 2: Delete Permanently Now
-                  SizedBox(
+                  GlassButton(
                     width: double.infinity,
                     height: 52,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFDC2626),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: _confirmImmediateDeletion,
-                      icon: const Icon(Icons.delete_forever_rounded, color: Colors.white),
-                      label: const Text(
-                        "Delete Permanently Now (No Waiting)",
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                    radius: 16,
+                    isDanger: true,
+                    onPressed: _confirmImmediateDeletion,
+                    icon: const Icon(Icons.delete_forever_rounded, color: Colors.white),
+                    child: const Text(
+                      "Delete Permanently Now (No Waiting)",
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),

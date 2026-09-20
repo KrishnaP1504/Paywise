@@ -969,71 +969,20 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                             buttonIcon = Icons.lock_outline_rounded;
                           }
 
-                          return SizedBox(
+                          return GlassButton(
                             width: double.infinity,
-                            height: 54,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                gradient: !canSave
-                                    ? const LinearGradient(
-                                        colors: [Color(0xFF94A3B8), Color(0xFF64748B)],
-                                      )
-                                    : const LinearGradient(
-                                        colors: [Color(0xFF2A36B1), Color(0xFF3B4CCA)],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                      ),
-                                boxShadow: !canSave
-                                    ? []
-                                    : [
-                                        BoxShadow(
-                                          color: const Color(0xFF2A36B1).withValues(alpha: 0.35),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: canSave ? _saveLoan : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  disabledBackgroundColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: _isSaving
-                                    ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5,
-                                        ),
-                                      )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            buttonIcon,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            buttonLabel,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                              letterSpacing: 0.8,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                            height: 52,
+                            radius: 16,
+                            isLoading: _isSaving,
+                            onPressed: canSave ? _saveLoan : null,
+                            icon: Icon(buttonIcon, color: Colors.white, size: 20),
+                            child: Text(
+                              buttonLabel,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                letterSpacing: 0.8,
+                                color: Colors.white,
                               ),
                             ),
                           );

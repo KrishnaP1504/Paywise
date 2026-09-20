@@ -68,14 +68,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
               ),
+            ),
+            GlassButton(
+              height: 38,
+              radius: 12,
+              isDanger: true,
               onPressed: () async {
                 Navigator.pop(ctx);
                 await _authService.signOut();

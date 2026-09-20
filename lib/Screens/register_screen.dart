@@ -588,60 +588,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 20),
 
                           // ── REGISTER BUTTON ──
-                          Container(
+                          GlassButton(
                             width: double.infinity,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                colors: isDark
-                                    ? const [Color(0xFF6366F1), Color(0xFF4F46E5)]
-                                    : const [Color(0xFF1E3C72), Color(0xFF2A5298)],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
+                            height: 50,
+                            radius: 16,
+                            isLoading: _isLoading,
+                            onPressed: _isLoading ? null : _register,
+                            icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                            child: const Text(
+                              "REGISTER",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
                               ),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: isDark ? 0.35 : 0.50),
-                                width: 1.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isDark ? const Color(0xFF6366F1) : const Color(0xFF1E3C72))
-                                      .withValues(alpha: 0.38),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _register,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
-                                    )
-                                  : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "REGISTER",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.8,
-                                          ),
-                                        ),
-                                        SizedBox(width: 10),
-                                        Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
-                                      ],
-                                    ),
                             ),
                           ),
                         ],

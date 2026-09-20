@@ -374,34 +374,27 @@ class _CompletedLoanCardItemState extends State<_CompletedLoanCardItem> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: GlassButton(
                     onPressed: () => showLoanPeriodAnalysis(context, loan),
-                    icon: const Icon(Icons.insights_rounded, size: 16),
-                    label: const Text("Analysis", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.indigo,
-                      side: BorderSide(color: Colors.indigo.withValues(alpha: 0.3)),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    icon: const Icon(Icons.insights_rounded, size: 16, color: Colors.white),
+                    height: 36,
+                    radius: 10,
+                    child: const Text("Analysis", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: GlassButton(
                     onPressed: () async {
                       final schedule = Provider.of<LoanProvider>(context, listen: false)
                           .getAmortizationSchedule(loan);
                       await PdfService.generateAndPrint(loan, schedule);
                     },
-                    icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
-                    label: const Text("PDF", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: isDark ? Colors.grey[300] : Colors.grey[700],
-                      side: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    isSecondary: true,
+                    icon: Icon(Icons.picture_as_pdf_outlined, size: 16, color: isDark ? Colors.white : Colors.black87),
+                    height: 36,
+                    radius: 10,
+                    child: const Text("PDF", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -452,14 +445,15 @@ class _CompletedLoanCardItemState extends State<_CompletedLoanCardItem> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700]),
                 ),
+              ),
+              GlassButton(
+                height: 38,
+                radius: 12,
+                isDanger: true,
                 onPressed: () => Navigator.pop(ctx, true),
                 child: const Text('Delete'),
               ),

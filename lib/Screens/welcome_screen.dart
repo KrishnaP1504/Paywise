@@ -193,45 +193,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           const Spacer(flex: 2),
 
                           // ── 4. PRIMARY CTA: GET STARTED ──
-                          SizedBox(
+                          GlassButton(
                             width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                elevation: 3,
-                                shadowColor: accentIndigo.withValues(alpha: 0.35),
-                              ),
-                              onPressed: _onGetStarted,
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF1E3C72), Color(0xFF2A5298)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Get Started",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
-                                    ],
-                                  ),
-                                ),
+                            height: 50,
+                            radius: 16,
+                            onPressed: _onGetStarted,
+                            icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                            child: const Text(
+                              "Get Started",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.2,
                               ),
                             ),
                           ),

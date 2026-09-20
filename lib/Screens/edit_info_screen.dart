@@ -251,28 +251,22 @@ class _EditInfoScreenState extends State<EditInfoScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
+              GlassButton(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    Navigator.pop(ctx);
-                    await _authService.signOut();
-                    if (mounted) {
-                      Provider.of<LoanProvider>(context, listen: false).clearUserData();
-                      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                    }
-                  },
-                  icon: const Icon(Icons.login_rounded, size: 20),
-                  label: const Text(
-                    "Sign In to Another Account",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3C72),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
+                radius: 14,
+                icon: const Icon(Icons.login_rounded, size: 20, color: Colors.white),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _authService.signOut();
+                  if (mounted) {
+                    Provider.of<LoanProvider>(context, listen: false).clearUserData();
+                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                  }
+                },
+                child: const Text(
+                  "Sign In to Another Account",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
               const SizedBox(height: 10),
@@ -310,14 +304,15 @@ class _EditInfoScreenState extends State<EditInfoScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
               ),
+            ),
+            GlassButton(
+              height: 38,
+              radius: 12,
+              isDanger: true,
               onPressed: () async {
                 Navigator.pop(ctx);
                 await _authService.signOut();
