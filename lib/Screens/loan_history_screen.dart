@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:paywise/providers/loan_provider.dart';
+import 'package:paywise/providers/settings_provider.dart';
 import 'package:paywise/services/pdf_service.dart';
 import 'package:paywise/widgets/loan_analysis_sheet.dart';
 import 'package:paywise/widgets/undo_toast.dart';
@@ -31,6 +32,7 @@ class _LoanHistoryScreenState extends State<LoanHistoryScreen> {
     final currency = AppCurrency.formatter;
 
     final loanProvider = Provider.of<LoanProvider>(context);
+    final settings = Provider.of<SettingsProvider>(context);
     final completedLoans = loanProvider.loans.where((l) => l.isPaidOff).toList();
 
     double totalCleared = 0;
@@ -222,6 +224,138 @@ class _LoanHistoryScreenState extends State<LoanHistoryScreen> {
                     final completedDate = loan.lastPaymentDate ?? DateTime.now();
                     final categoryIcon = loan.categoryIcon;
 
+                    final card = Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: GlassTheme.cardDecoration(context, radius: 20),
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/loan_details', arguments: loan),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: GlassTheme.iconBoxDecoration(context, color: Colors.indigo, radius: 14),
+                                  child: Icon(categoryIcon, color: Colors.indigo, size: 24),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        loan.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        loan.lenderName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      currency.format(loan.principalAmount),
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Cleared ${DateFormat('dd MMM yy').format(completedDate)}",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: GlassTheme.pillDecoration(
+                                    context,
+                                    color: const Color(0xFF2E7D32),
+                                    radius: 8,
+                                  ),
+                                  child: const Text(
+                                    '✅ Completed · 100% Repaid',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Color(0xFF2E7D32),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 14),
+                            const Divider(height: 1),
+                            const SizedBox(height: 10),
+
+                            // Quick Action Buttons on Completed Card
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => showLoanPeriodAnalysis(context, loan),
+                                    icon: const Icon(Icons.insights_rounded, size: 16),
+                                    label: const Text("Analysis", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.indigo,
+                                      side: BorderSide(color: Colors.indigo.withValues(alpha: 0.3)),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final schedule = Provider.of<LoanProvider>(context, listen: false)
+                                          .getAmortizationSchedule(loan);
+                                      await PdfService.generateAndPrint(loan, schedule);
+                                    },
+                                    icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
+                                    label: const Text("PDF", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: isDark ? Colors.grey[300] : Colors.grey[700],
+                                      side: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+
+                    if (!settings.swipeActionsEnabled) return card;
+
                     return Dismissible(
                       key: ValueKey("history_${loan.id}"),
                       direction: DismissDirection.endToStart,
@@ -275,135 +409,7 @@ class _LoanHistoryScreenState extends State<LoanHistoryScreen> {
                           subtitle: "${loan.title} removed from history.",
                         );
                       },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.all(16),
-                        decoration: GlassTheme.cardDecoration(context, radius: 20),
-                        child: InkWell(
-                          onTap: () => Navigator.pushNamed(context, '/loan_details', arguments: loan),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: GlassTheme.iconBoxDecoration(context, color: Colors.indigo, radius: 14),
-                                    child: Icon(categoryIcon, color: Colors.indigo, size: 24),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          loan.title,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          loan.lenderName,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        currency.format(loan.principalAmount),
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        "Cleared ${DateFormat('dd MMM yy').format(completedDate)}",
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: GlassTheme.pillDecoration(
-                                      context,
-                                      color: const Color(0xFF2E7D32),
-                                      radius: 8,
-                                    ),
-                                    child: const Text(
-                                      '✅ Completed · 100% Repaid',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Color(0xFF2E7D32),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 14),
-                              const Divider(height: 1),
-                              const SizedBox(height: 10),
-
-                              // Quick Action Buttons on Completed Card
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () => showLoanPeriodAnalysis(context, loan),
-                                      icon: const Icon(Icons.insights_rounded, size: 16),
-                                      label: const Text("Analysis", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.indigo,
-                                        side: BorderSide(color: Colors.indigo.withValues(alpha: 0.3)),
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () async {
-                                        final schedule = Provider.of<LoanProvider>(context, listen: false)
-                                            .getAmortizationSchedule(loan);
-                                        await PdfService.generateAndPrint(loan, schedule);
-                                      },
-                                      icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
-                                      label: const Text("PDF", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: isDark ? Colors.grey[300] : Colors.grey[700],
-                                        side: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      child: card,
                     );
                   }),
                 ],

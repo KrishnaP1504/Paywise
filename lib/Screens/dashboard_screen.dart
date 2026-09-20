@@ -112,7 +112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final loanProvider = Provider.of<LoanProvider>(context);
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final settings = Provider.of<SettingsProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currency = _currencyFormat;
 
@@ -897,9 +897,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (direction == DismissDirection.startToEnd) {
           _showQuickPayDialog(context, loan);
           return false;
-        } else {
-          return true;
+        } else if (direction == DismissDirection.endToStart) {
+          final bool? shouldDelete = await _showDeleteConfirmationDialog(context, loan);
+          return shouldDelete == true;
         }
+        return false;
       },
       onDismissed: (direction) {
         if (direction == DismissDirection.endToStart) {
@@ -910,6 +912,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
       },
       child: card,
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmationDialog(BuildContext context, LoanModel loan) {
+    return GlassTheme.showGlassDialog<bool>(
+      context: context,
+      builder: (ctx) => GlassAlertDialog(
+        icon: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 30),
+        ),
+        title: const Text('Delete Loan?'),
+        content: Text(
+          'Are you sure you want to delete "${loan.title}"?\n\nThis will remove it from your active loans and schedule it for deletion.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
