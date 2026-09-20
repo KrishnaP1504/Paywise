@@ -24,9 +24,6 @@ import 'package:paywise/config/env_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; 
 
-/// Global flag: true only when Firebase initialized successfully
-bool firebaseReady = false;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -40,10 +37,9 @@ void main() async {
       if (EnvConfig.firebaseApiKey.isNotEmpty) {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
-        ).timeout(const Duration(seconds: 10));
+        );
       } else {
-        await Firebase.initializeApp()
-            .timeout(const Duration(seconds: 10));
+        await Firebase.initializeApp();
       }
     }
     // Enable offline disk persistence so Firestore serves cached data instantly on startup
@@ -51,9 +47,7 @@ void main() async {
       persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
-    firebaseReady = true;
   } catch (e) {
-    firebaseReady = false;
     if (!e.toString().contains('duplicate-app')) {
       debugPrint("Firebase Init Error: $e");
     }
@@ -407,24 +401,6 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     if (!_hasCheckedBiometrics) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    // If Firebase failed to initialize, skip auth and go to login
-    if (!firebaseReady) {
-      return FutureBuilder<SharedPreferences>(
-        future: SharedPreferences.getInstance(),
-        builder: (ctx, prefsSnap) {
-          if (!prefsSnap.hasData) {
-            return Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              body: const Center(child: CircularProgressIndicator()),
-            );
-          }
-          final hasSeenWelcome = prefsSnap.data!.getBool('hasSeenWelcome') ?? false;
-          if (!hasSeenWelcome) return const WelcomeScreen();
-          return const LoginScreen();
-        },
-      );
     }
 
     return StreamBuilder<User?>(
