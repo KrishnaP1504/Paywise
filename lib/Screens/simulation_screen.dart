@@ -177,27 +177,31 @@ class _SimulationScreenState extends State<SimulationScreen>
           ),
         ),
       ),
-      body: GlassBackground(
-        child: activeLoans.isEmpty
-            ? _buildNoLoans()
-            : ScrolledNotificationWrapper(
-                isScrolledNotifier: _isScrolled,
-                child: Column(
-                  children: [
-                    _buildLoanSelector(activeLoans, selectedLoan!, isDark),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _ExtraEmiTab(loan: selectedLoan),
-                          _LumpSumTab(loan: selectedLoan),
-                          _RefinancingTab(loan: selectedLoan),
-                        ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: GlassBackground(
+          child: activeLoans.isEmpty
+              ? _buildNoLoans()
+              : ScrolledNotificationWrapper(
+                  isScrolledNotifier: _isScrolled,
+                  child: Column(
+                    children: [
+                      _buildLoanSelector(activeLoans, selectedLoan!, isDark),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _ExtraEmiTab(loan: selectedLoan),
+                            _LumpSumTab(loan: selectedLoan),
+                            _RefinancingTab(loan: selectedLoan),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -564,6 +568,7 @@ class _ExtraEmiTabState extends State<_ExtraEmiTab> {
     // Handle micro-loans or ultra-short tenure loans
     if (loan.tenureMonths <= 2 || loan.emiAmount < 50 || loan.outstandingBalance < 100) {
       return SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(8, 24, 8, 150),
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -638,6 +643,7 @@ class _ExtraEmiTabState extends State<_ExtraEmiTab> {
     final maxExtra = _maxExtra;
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(8, 16, 8, 150),
       child: Column(
         children: [
@@ -935,11 +941,18 @@ class _LumpSumTabState extends State<_LumpSumTab> {
                   TextField(
                     controller: amountCtrl,
                     keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                     inputFormatters: [
                       IndianCurrencyInputFormatter(),
                     ],
                     decoration: InputDecoration(
                       labelText: "Payment Amount (₹)",
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.check_circle_rounded, color: Colors.indigo, size: 22),
+                        tooltip: 'Done',
+                        onPressed: () => FocusScope.of(context).unfocus(),
+                      ),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -1043,6 +1056,7 @@ class _LumpSumTabState extends State<_LumpSumTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(8, 16, 8, 150),
       child: Column(
         children: [
@@ -1730,6 +1744,7 @@ class _RefinancingTabState extends State<_RefinancingTab> {
     final double safeMaxRate = max(_minRate + 0.1, _maxRate);
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(8, 16, 8, 150),
       child: Column(
         children: [
@@ -1854,6 +1869,7 @@ class _AmountField extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
+          textInputAction: TextInputAction.done,
           inputFormatters: isCurrency
               ? [IndianCurrencyInputFormatter(allowDecimals: isDecimal)]
               : [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
@@ -1861,6 +1877,15 @@ class _AmountField extends StatelessWidget {
             hintText: hint,
             prefixText: suffix == null ? '₹ ' : null,
             suffixText: suffix,
+            suffixIcon: IconButton(
+              icon: Icon(Icons.check_circle_rounded, color: color, size: 22),
+              tooltip: 'Done',
+              splashRadius: 18,
+              onPressed: () {
+                onSubmitted(controller.text);
+                FocusScope.of(context).unfocus();
+              },
+            ),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -1875,7 +1900,10 @@ class _AmountField extends StatelessWidget {
             errorText: errorText,
             errorMaxLines: 2,
           ),
-          onSubmitted: onSubmitted,
+          onSubmitted: (val) {
+            onSubmitted(val);
+            FocusScope.of(context).unfocus();
+          },
           onEditingComplete: () {
             onSubmitted(controller.text);
             FocusScope.of(context).unfocus();

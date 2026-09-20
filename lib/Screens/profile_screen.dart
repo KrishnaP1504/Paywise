@@ -113,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final phoneNumber = user?.phoneNumber;
     final email = user?.email;
     final settings = Provider.of<SettingsProvider>(context);
-    final isDark = settings.themeMode == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final String displayName = user?.displayName != null && user!.displayName!.isNotEmpty
         ? user.displayName!
@@ -319,11 +319,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       title: const Text("Dark Mode", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      subtitle: const Text("Easy on the eyes at night", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      trailing: Switch(
-                        value: isDark,
-                        activeTrackColor: primaryNavy,
-                        onChanged: (val) => settings.toggleTheme(val),
+                      subtitle: Text(
+                        settings.isThemeSystem
+                            ? "Following phone theme (${isDark ? 'Dark' : 'Light'})"
+                            : (isDark ? "Always Dark (Custom)" : "Always Light (Custom)"),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!settings.isThemeSystem)
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () => settings.resetThemeToSystem(),
+                              child: const Text("Auto", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            ),
+                          Switch(
+                            value: isDark,
+                            activeTrackColor: primaryNavy,
+                            onChanged: (val) => settings.toggleTheme(val),
+                          ),
+                        ],
                       ),
                     ),
                     Divider(height: 1, indent: 64, endIndent: 16, color: isDark ? Colors.grey[800] : Colors.grey[200]),

@@ -93,11 +93,20 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isThemeSystem => _themeMode == ThemeMode.system;
+
   Future<void> toggleTheme(bool isDark) async {
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', isDark);
+  }
+
+  Future<void> resetThemeToSystem() async {
+    _themeMode = ThemeMode.system;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('isDarkMode');
   }
 
   Future<void> toggleSwipeActions(bool enabled) async {
