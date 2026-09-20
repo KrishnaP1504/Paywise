@@ -758,7 +758,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 20),
 
-          // ── 4. HELP CARD ──
+          // ── 4. PRIVACY POLICY CARD ──
           Container(
             decoration: GlassTheme.cardDecoration(context, radius: 20),
             child: ClipRRect(
@@ -778,17 +778,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: primaryNavy.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.shield_outlined, color: primaryNavy),
+                    child: const Icon(Icons.policy_outlined, color: primaryNavy),
                   ),
-                  title: const Text("We're here to help", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  subtitle: const Text("Visit Help Center for support", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  title: const Text("Privacy Policy", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  subtitle: const Text("How your data & security are protected", style: TextStyle(fontSize: 12, color: Colors.grey)),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                   onTap: () {
-                    UndoToastManager.showInfoToast(
-                      context: context,
-                      title: "Help Center ℹ️",
-                      subtitle: "Help & Support feature coming soon!",
-                    );
+                    Navigator.pushNamed(context, '/privacy_policy');
                   },
                 ),
               ),

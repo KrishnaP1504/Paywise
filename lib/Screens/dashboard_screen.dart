@@ -863,9 +863,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         alignment: Alignment.centerLeft,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.only(left: 24),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.green,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            bottomLeft: Radius.circular(20),
+          ),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -880,9 +883,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         alignment: Alignment.centerRight,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.only(right: 24),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.red,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,

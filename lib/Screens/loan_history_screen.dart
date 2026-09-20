@@ -363,9 +363,12 @@ class _LoanHistoryScreenState extends State<LoanHistoryScreen> {
                         alignment: Alignment.centerRight,
                         margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.only(right: 24),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
                         ),
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,

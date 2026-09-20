@@ -298,8 +298,9 @@ Every notification category can be individually toggled in Settings alongside a 
 * **User Profile Header**: Displays user avatar, full name, and authenticated email address.
 * **Appearance (Dark Mode)**: Dynamic system tracking switch with manual override and an "Auto" reset button.
 * **Biometric Security**: Switch to activate Face ID / Touch ID / Fingerprint lock.
-* **Interaction (Swipe Actions)**: Toggle to enable or disable swipe gestures on dashboard cards.
+* **Interaction (Swipe Actions)**: Toggle to enable or disable swipe gestures on dashboard cards with reactive real-time updates.
 * **Notification Preferences**: Independent toggles for Advance, Due Tomorrow, Due Today, and Overdue alerts.
+* **Privacy Policy Access**: Dedicated link opening the comprehensive in-app privacy and data protection policy.
 * **Danger Zone**: Access to the 7-Day Grace Period account deletion workflow.
 * **Version & Copyright**: Displays `Version 1.0.0` and `© 2026 PayWise. All rights reserved.`.
 
@@ -309,6 +310,14 @@ Every notification category can be individually toggled in Settings alongside a 
 ### Screen 14: Delete Account Screen
 * Explains the 7-day grace period, preventing emotional or accidental data loss.
 * Provides actions to schedule deletion with a 7-day safety window, cancel an active deletion request, or execute immediate permanent deletion.
+
+### Screen 15: Privacy Policy Screen
+* **Dedicated Privacy Document**: Full in-app breakdown of PayWise data protection and security commitments.
+* **Zero Monetization Standard**: Details strict prohibition against advertising trackers, third-party data brokers, and user profiling.
+* **Zero Surveillance Guarantee**: Reassures users that SMS inboxes, personal contacts, and bank credentials are never accessed.
+* **Hardware-Backed Biometrics & Privacy Curtain**: Explains Secure Enclave storage and the background multitasking privacy shield overlay.
+* **Data Isolation & Encryption**: Outlines user sandboxing under Firebase Authentication IDs, TLS 1.3 transit encryption, and AES-256 rest encryption.
+* **Full Data Ownership & Erasure**: Reaffirms the user's right to full data export, account restoration, or permanent purge.
 
 ---
 

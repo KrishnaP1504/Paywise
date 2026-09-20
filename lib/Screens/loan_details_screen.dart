@@ -346,10 +346,13 @@ class _LoanDetailsScreenState extends State<LoanDetailsScreen> {
                       background: Container(
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 20),
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: const BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          ),
                         ),
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,

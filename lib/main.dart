@@ -15,6 +15,7 @@ import 'package:paywise/Screens/loan_history_screen.dart';
 import 'package:paywise/Screens/profile_screen.dart';
 import 'package:paywise/Screens/edit_info_screen.dart';
 import 'package:paywise/Screens/welcome_screen.dart';
+import 'package:paywise/Screens/privacy_policy_screen.dart';
 import 'package:paywise/theme/glass_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
@@ -138,6 +139,7 @@ class MyApp extends StatelessWidget {
               '/profile': (context) => const ProfileScreen(),
               '/edit_info': (context) => const EditInfoScreen(),
               '/welcome': (context) => const WelcomeScreen(),
+              '/privacy_policy': (context) => const PrivacyPolicyScreen(),
             };
 
             final builder = routes[settings.name];
