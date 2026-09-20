@@ -41,20 +41,48 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: EnvConfig.firebaseApiKey,
-    appId: EnvConfig.firebaseAppId,
-    messagingSenderId: EnvConfig.firebaseMessagingSenderId,
-    projectId: EnvConfig.firebaseProjectId,
-    storageBucket: EnvConfig.firebaseStorageBucket,
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: EnvConfig.firebaseApiKey.isNotEmpty
+        ? EnvConfig.firebaseApiKey
+        : 'AIzaSyCEwbenQ-B8cLVB6WtRPTRpGbBU7FWEkN4',
+    appId: EnvConfig.firebaseAppId.isNotEmpty
+        ? EnvConfig.firebaseAppId
+        : '1:416506927819:android:15f14c3f910558bd80594e',
+    messagingSenderId: EnvConfig.firebaseMessagingSenderId.isNotEmpty
+        ? EnvConfig.firebaseMessagingSenderId
+        : '416506927819',
+    projectId: EnvConfig.firebaseProjectId.isNotEmpty
+        ? EnvConfig.firebaseProjectId
+        : 'paywise-kp1504',
+    databaseURL: EnvConfig.firebaseDatabaseUrl.isNotEmpty
+        ? EnvConfig.firebaseDatabaseUrl
+        : 'https://paywise-kp1504-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: EnvConfig.firebaseStorageBucket.isNotEmpty
+        ? EnvConfig.firebaseStorageBucket
+        : 'paywise-kp1504.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: EnvConfig.firebaseApiKey,
-    appId: EnvConfig.firebaseAppId,
-    messagingSenderId: EnvConfig.firebaseMessagingSenderId,
-    projectId: EnvConfig.firebaseProjectId,
-    storageBucket: EnvConfig.firebaseStorageBucket,
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: EnvConfig.firebaseApiKey.isNotEmpty
+        ? EnvConfig.firebaseApiKey
+        : 'AIzaSyBc8vpTmzHnskplpRBTvaSZzDnkn8yEK3A',
+    appId: EnvConfig.firebaseAppId.isNotEmpty
+        ? EnvConfig.firebaseAppId
+        : '1:416506927819:ios:545c8672250c56dd80594e',
+    messagingSenderId: EnvConfig.firebaseMessagingSenderId.isNotEmpty
+        ? EnvConfig.firebaseMessagingSenderId
+        : '416506927819',
+    projectId: EnvConfig.firebaseProjectId.isNotEmpty
+        ? EnvConfig.firebaseProjectId
+        : 'paywise-kp1504',
+    databaseURL: EnvConfig.firebaseDatabaseUrl.isNotEmpty
+        ? EnvConfig.firebaseDatabaseUrl
+        : 'https://paywise-kp1504-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: EnvConfig.firebaseStorageBucket.isNotEmpty
+        ? EnvConfig.firebaseStorageBucket
+        : 'paywise-kp1504.firebasestorage.app',
+    androidClientId: '416506927819-7mip51sfjkijiru3pnqp23mti6m59qvq.apps.googleusercontent.com',
+    iosClientId: '416506927819-640knv0ncvf5dc72hrerspb4mn8mli03.apps.googleusercontent.com',
     iosBundleId: 'com.pipal.paywise',
   );
 }

@@ -20,7 +20,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:paywise/services/auth_service.dart';
 import 'package:paywise/widgets/undo_toast.dart';
-import 'package:paywise/config/env_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; 
 
@@ -34,13 +33,9 @@ void main() async {
 
   try {
     if (Firebase.apps.isEmpty) {
-      if (EnvConfig.firebaseApiKey.isNotEmpty) {
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-      } else {
-        await Firebase.initializeApp();
-      }
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
     }
     // Enable offline disk persistence so Firestore serves cached data instantly on startup
     FirebaseFirestore.instance.settings = const Settings(
@@ -365,29 +360,39 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   Future<void> _checkBiometricLock() async {
     if (_hasCheckedBiometrics || _isAuthenticating) return;
 
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    final user = FirebaseAuth.instance.currentUser;
+    try {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      final user = FirebaseAuth.instance.currentUser;
 
-    if (user != null && settings.biometricEnabled) {
-      _isAuthenticating = true;
-      bool authenticated = false;
-      try {
-        await Future.delayed(const Duration(milliseconds: 500));
-        authenticated = await settings.authenticate();
-      } catch (e) {
-        debugPrint("Biometric Check Failed: $e");
-        authenticated = false; // FAIL CLOSED: Never bypass biometric lock on error
-      } finally {
-        _isAuthenticating = false;
+      if (user != null && settings.biometricEnabled) {
+        _isAuthenticating = true;
+        bool authenticated = false;
+        try {
+          await Future.delayed(const Duration(milliseconds: 500));
+          authenticated = await settings.authenticate();
+        } catch (e) {
+          debugPrint("Biometric Check Failed: $e");
+          authenticated = false; // FAIL CLOSED: Never bypass biometric lock on error
+        } finally {
+          _isAuthenticating = false;
+        }
+        
+        if (mounted) {
+          setState(() {
+            _isLocked = !authenticated;
+            _hasCheckedBiometrics = true;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLocked = false;
+            _hasCheckedBiometrics = true;
+          });
+        }
       }
-      
-      if (mounted) {
-        setState(() {
-          _isLocked = !authenticated;
-          _hasCheckedBiometrics = true;
-        });
-      }
-    } else {
+    } catch (e) {
+      debugPrint("Biometric Check Error: $e");
       if (mounted) {
         setState(() {
           _isLocked = false;
