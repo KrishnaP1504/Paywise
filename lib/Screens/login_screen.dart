@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:paywise/providers/loan_provider.dart';
 import 'package:paywise/Screens/email_verification_screen.dart';
 import 'package:paywise/services/auth_service.dart';
+import 'package:paywise/services/login_security_service.dart';
 import 'package:paywise/widgets/undo_toast.dart';
 import 'package:paywise/theme/glass_theme.dart';
 
@@ -21,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   final AuthService _authService = AuthService();
+  final LoginSecurityService _securityService = LoginSecurityService();
 
   @override
   void dispose() {
@@ -33,11 +36,35 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
+    final email = _emailController.text.trim();
+    final password = _passController.text.trim();
+
     setState(() => _isLoading = true);
 
     try {
-      final user = await _authService.login(_emailController.text.trim(), _passController.text.trim());
+      // ── 1. PRE-LOGIN BRUTE FORCE & IP SECURITY CHECK ──
+      final secCheck = await _securityService.checkPreLoginSecurity(email);
+
+      if (secCheck.isIpBlocked) {
+        if (mounted) {
+          _showIpBlockedDialog(secCheck.ip ?? 'your IP');
+        }
+        return;
+      }
+
+      if (secCheck.isAccountLocked && secCheck.lockedUntil != null) {
+        if (mounted) {
+          _showAccountLockedDialog(email, secCheck.lockedUntil!);
+        }
+        return;
+      }
+
+      // ── 2. ATTEMPT CREDENTIAL AUTHENTICATION ──
+      final user = await _authService.login(email, password);
       if (user != null && mounted) {
+        // Successful login: reset failed attempts and lockout timers in background
+        unawaited(_securityService.recordSuccessfulLogin(email));
+
         if (!user.emailVerified) {
           Navigator.push(
             context,
@@ -58,23 +85,125 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        String msg = "Invalid email or password. Please check your credentials and try again.";
-        final errStr = e.toString();
-        if (errStr.contains('network-request-failed')) {
-          msg = "Network error. Please check your internet connection.";
-        } else if (errStr.contains('too-many-requests')) {
-          msg = "Too many failed attempts. Please try again later.";
+        final errStr = e.toString().toLowerCase();
+        final isAuthFailure = errStr.contains('wrong-password') ||
+            errStr.contains('invalid-credential') ||
+            errStr.contains('user-not-found');
+
+        if (isAuthFailure) {
+          // Record failed attempt against account and IP
+          final result = await _securityService.recordFailedAttempt(
+            email,
+            reason: e.toString(),
+          );
+
+          if (!mounted) return;
+
+          if (result.isIpBlocked) {
+            _showIpBlockedDialog(result.ip ?? 'your IP');
+          } else if (result.isAccountLocked && result.lockedUntil != null) {
+            _showAccountLockedDialog(email, result.lockedUntil!);
+          } else {
+            final remaining = result.remainingAttempts;
+            UndoToastManager.showWarningToast(
+              context: context,
+              title: "Invalid Credentials",
+              subtitle: "Incorrect password. $remaining ${remaining == 1 ? 'attempt' : 'attempts'} remaining before 15-minute account lockout.",
+            );
+          }
+        } else {
+          String msg = "Invalid email or password. Please check your credentials and try again.";
+          if (errStr.contains('network-request-failed')) {
+            msg = "Network error. Please check your internet connection.";
+          } else if (errStr.contains('too-many-requests')) {
+            msg = "Too many failed attempts. Please try again later.";
+          }
+          UndoToastManager.showErrorToast(
+            context: context,
+            title: "Sign In Failed",
+            subtitle: msg,
+          );
         }
-        UndoToastManager.showErrorToast(
-          context: context,
-          title: "Sign In Failed",
-          subtitle: msg,
-        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  void _showIpBlockedDialog(String ip) {
+    GlassTheme.showGlassDialog(
+      context: context,
+      builder: (dialogCtx) {
+        final isDark = Theme.of(dialogCtx).brightness == Brightness.dark;
+        return GlassAlertDialog(
+          icon: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.red.withValues(alpha: 0.25) : const Color(0xFFFEE2E2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.gpp_bad_rounded, size: 36, color: Color(0xFFDC2626)),
+          ),
+          title: const Text("IP Address Blocked"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Access from this IP address ($ip) has been permanently blocked due to excessive failed login attempts (1,000+ attempts detected).\n\nIf you believe this is in error, please contact security support.",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            GlassButton(
+              height: 44,
+              radius: 12,
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text("I Understand", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAccountLockedDialog(String email, DateTime lockedUntil) {
+    GlassTheme.showGlassDialog(
+      context: context,
+      builder: (dialogCtx) => _AccountLockedDialogContent(
+        email: email,
+        lockedUntil: lockedUntil,
+        onUnlockEmailRequested: () async {
+          try {
+            await _securityService.sendUnlockEmail(email);
+            if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+            if (mounted) {
+              UndoToastManager.showSuccessToast(
+                context: context,
+                title: "Unlock Email Sent 📧",
+                subtitle: "Check $email for instructions to reset your password and unlock your account.",
+              );
+            }
+          } catch (e) {
+            if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+            if (mounted) {
+              UndoToastManager.showErrorToast(
+                context: context,
+                title: "Error Sending Email",
+                subtitle: "Please check your internet connection and try again.",
+              );
+            }
+          }
+        },
+      ),
+    );
+  }
+
 
   void _showForgotPasswordDialog() {
     final resetEmailController = TextEditingController(text: _emailController.text.trim());
@@ -853,3 +982,167 @@ class _BubbleDecoration extends StatelessWidget {
     );
   }
 }
+
+// ── ACCOUNT LOCKED COOLDOWN DIALOG CONTENT WITH LIVE TIMER ──
+class _AccountLockedDialogContent extends StatefulWidget {
+  final String email;
+  final DateTime lockedUntil;
+  final Future<void> Function() onUnlockEmailRequested;
+
+  const _AccountLockedDialogContent({
+    required this.email,
+    required this.lockedUntil,
+    required this.onUnlockEmailRequested,
+  });
+
+  @override
+  State<_AccountLockedDialogContent> createState() => _AccountLockedDialogContentState();
+}
+
+class _AccountLockedDialogContentState extends State<_AccountLockedDialogContent> {
+  Timer? _timer;
+  late int _remainingSeconds;
+  bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _remainingSeconds = widget.lockedUntil.difference(DateTime.now()).inSeconds;
+    if (_remainingSeconds > 0) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        final rem = widget.lockedUntil.difference(DateTime.now()).inSeconds;
+        setState(() {
+          _remainingSeconds = rem;
+        });
+        if (rem <= 0) {
+          timer.cancel();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatRemaining(int seconds) {
+    if (seconds <= 0) return "0s";
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    if (m > 0) {
+      return "${m}m ${s.toString().padLeft(2, '0')}s";
+    }
+    return "${s}s";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExpired = _remainingSeconds <= 0;
+
+    return GlassAlertDialog(
+      icon: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.red.withValues(alpha: 0.25) : const Color(0xFFFEE2E2),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.lock_clock_rounded, size: 36, color: Color(0xFFDC2626)),
+      ),
+      title: const Text("Account Locked"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            isExpired
+                ? "Your security cooldown has expired. You can now try logging in again."
+                : "For your security, this account has been temporarily locked after 5 failed password attempts.",
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? Colors.grey[300] : Colors.grey[700],
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          if (!isExpired) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.red.withValues(alpha: 0.12) : const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? Colors.red.withValues(alpha: 0.3) : const Color(0xFFFECACA),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.timer_outlined, size: 20, color: Color(0xFFDC2626)),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Cooldown: ${_formatRemaining(_remainingSeconds)}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "To unlock immediately without waiting for cooldown, tap below to verify via email.",
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: GlassButton(
+                isSecondary: true,
+                height: 44,
+                radius: 12,
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Close"),
+              ),
+            ),
+            if (!isExpired) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: GlassButton(
+                  height: 44,
+                  radius: 12,
+                  isLoading: _isSending,
+                  onPressed: _isSending
+                      ? null
+                      : () async {
+                          setState(() => _isSending = true);
+                          await widget.onUnlockEmailRequested();
+                          if (mounted) setState(() => _isSending = false);
+                        },
+                  child: const Text("Verify via Email", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+

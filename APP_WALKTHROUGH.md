@@ -40,6 +40,13 @@ PayWise adheres to a strict zero-exploitation standard:
 * **Fail-Closed Security Model**: If biometric verification fails, is cancelled, or encounters a sensor error, access to financial data is denied. The app will never default to an unlocked state upon error.
 * **Background Privacy Curtain**: The moment PayWise is sent to the background or the operating system app switcher is engaged, the app applies a dark security shield overlay over the interface, preventing shoulder-surfing and blocking financial figures from appearing in app preview screenshots.
 
+### Brute-Force Login Defense, Account Lockouts & IP Blocking
+* **5-Attempt Account Lockout Threshold**: To prevent credential-guessing scripts, dictionary attacks, automated bot traffic, and credential stuffing from indefinitely guessing passwords on registered email accounts, PayWise strictly limits consecutive incorrect password attempts to 5 per account.
+* **15-Minute Cooldown Window with Live Countdown**: Upon the 5th consecutive failed attempt, the account enters an automated 15-minute security cooldown lockout. During this period, all credential authentication requests for the account are blocked at the gate. The login interface presents a frosted glass security dialog displaying a live ticking countdown timer (minutes and seconds remaining).
+* **Instant Email Verification & Fast-Unlock Channel**: Legitimate users locked out by accident do not have to wait for the 15-minute cooldown. The security dialog features a direct 1-tap "Verify via Email" option that immediately dispatches a secure password reset and verification link to their registered address, allowing the verified account owner to unlock and access their profile instantly.
+* **WAN IP Address Tracking & Excessive Attempt Blocking**: PayWise logs the client WAN IP address associated with failed authentication attempts. If a malicious source or automated bot network generates excessive failed login attempts (1,000 cumulative attempts) from a single IP address, that IP is permanently blocked across the platform, rejecting further login requests before credentials reach authentication servers.
+* **Dual-Layer Synchronization & Tamper-Evident Audit Trail**: Security rules and failed attempt counters are synchronized between encrypted local device storage and Cloud Firestore (`account_security`, `ip_security`, and `security_audit_logs`). Successful sign-ins automatically reset account attempt counters to zero, while every suspicious attempt is preserved in an append-only audit trail.
+
 ### Data Storage, Isolation & Offline Persistence
 * **Per-User Document Sandboxing**: Every user's data is isolated in Cloud Firestore under their unique Firebase Authentication ID (`/users/{uid}/loans/`). Users cannot read, query, or modify records belonging to any other user.
 * **Offline Disk Persistence**: PayWise maintains an encrypted local disk cache on the device. Users can access loan schedules, review payment histories, and run simulations completely offline. Any offline modifications queue locally and synchronize immediately once connectivity resumes.
@@ -69,6 +76,7 @@ Accidental account deletion can permanently destroy years of carefully curated f
 | Service / Tool | Implementation in PayWise | Operational Benefit |
 |---|---|---|
 | **Firebase Authentication** | Email/Password credentials and Google Sign-In with OAuth token validation. | Secure, friction-free login across multiple devices. |
+| **Login Security & Brute-Force Defense** | Automated 5-attempt account lockout, 15-minute cooldowns, fast email verification unlock, and 1,000-attempt IP address blocking. | Shields accounts against automated brute-force scripts, dictionary attacks, and credential stuffing. |
 | **Cloud Firestore** | Cloud database storing user profiles, loan documents, and payment sub-collections. | Instant real-time multi-device sync and automatic offline write queuing. |
 | **Offline Disk Persistence** | Firestore local persistence engine enabled with unlimited cache size. | Instant app launch with zero loading delay, even on offline or spotty connections. |
 | **Native iOS Configuration** | Registered inside Xcode project bundle resources (`GoogleService-Info.plist`). | Full compatibility with iOS security standards, push notification services, and Apple guidelines. |
@@ -76,6 +84,7 @@ Accidental account deletion can permanently destroy years of carefully curated f
 | **Local Authentication** | Native fingerprint and Face ID verification via device biometric hardware. | High-speed security checkpoint safeguarding sensitive financial records. |
 | **Local Notifications** | Timezone-aware local background reminder engine. | Reliable EMI due date reminders without requiring third-party marketing servers. |
 | **PDF & Printing** | Vector document rendering engine generating A4 loan statements. | Official, print-ready amortization schedules for offline archiving and sharing. |
+
 
 ---
 

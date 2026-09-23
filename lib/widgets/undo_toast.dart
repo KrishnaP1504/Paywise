@@ -208,6 +208,34 @@ class UndoToastManager {
     );
   }
 
+  // ── 5. WARNING TOAST (POPUP FROM BOTTOM ABOVE NAVBAR) ──
+  static void showWarningToast({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    _showToast(
+      context: context,
+      duration: duration,
+      widget: _BaseToastWidget(
+        title: title,
+        subtitle: subtitle,
+        icon: Icons.warning_amber_rounded,
+        iconSize: 22,
+        brandColor: const Color(0xFFF59E0B),
+        lightBgColor: const Color(0xFFFFFBEB),
+        darkBgColor: const Color(0xFF33230A),
+        lightTitleColor: const Color(0xFF92400E),
+        lightSubtitleColor: const Color(0xFFB45309),
+        darkTitleColor: const Color(0xFFFDE68A),
+        darkSubtitleColor: const Color(0xFFFCD34D),
+        onClose: _dismissOverlay,
+      ),
+    );
+  }
+
+
   static void _dismissOverlay() {
     _toastTimer?.cancel();
     _toastTimer = null;
