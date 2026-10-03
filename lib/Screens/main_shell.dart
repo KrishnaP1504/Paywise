@@ -20,8 +20,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   final List<Widget> _pages = const [
     DashboardScreen(key: ValueKey('home')),
     SimulationScreen(key: ValueKey('simulate')),
-    InfoScreen(key: ValueKey('info')),
     ProfileScreen(key: ValueKey('settings')),
+    InfoScreen(key: ValueKey('info')),
   ];
 
   @override
@@ -173,9 +173,9 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
               ),
               _buildNavItem(
                 index: 2,
-                icon: Icons.info_rounded,
-                unselectedIcon: Icons.info_outline,
-                label: 'Info',
+                icon: Icons.settings_rounded,
+                unselectedIcon: Icons.settings_outlined,
+                label: 'Settings',
                 activePillBg: activePillBg,
                 activeBorderColor: activeBorderColor,
                 activeColor: activeColor,
@@ -184,9 +184,9 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
               ),
               _buildNavItem(
                 index: 3,
-                icon: Icons.settings_rounded,
-                unselectedIcon: Icons.settings_outlined,
-                label: 'Settings',
+                icon: Icons.info_rounded,
+                unselectedIcon: Icons.info_outline,
+                label: 'Info',
                 activePillBg: activePillBg,
                 activeBorderColor: activeBorderColor,
                 activeColor: activeColor,

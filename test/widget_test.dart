@@ -765,6 +765,35 @@ void main() {
     expect(find.text('Security & Asset Rules'), findsOneWidget);
     expect(find.text('Costs, Fees & Financial Health'), findsOneWidget);
   });
+
+  testWidgets('MainShell tab ordering: Settings is 3rd (index 2) and Info is last (index 3)', (WidgetTester tester) async {
+    final loanProvider = LoanProvider();
+    final settingsProvider = SettingsProvider();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: loanProvider),
+          ChangeNotifierProvider.value(value: settingsProvider),
+        ],
+        child: const MaterialApp(
+          home: MainShell(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    // Tap 3rd tab: Settings
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('settings')), findsOneWidget);
+
+    // Tap 4th tab: Info (last)
+    await tester.tap(find.text('Info'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('info')), findsOneWidget);
+  });
 }
 
 
