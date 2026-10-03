@@ -10,6 +10,7 @@ import 'package:paywise/providers/settings_provider.dart';
 import 'package:paywise/models/loan_model.dart';
 import 'package:paywise/widgets/undo_toast.dart';
 import 'package:paywise/utils/currency_formatter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:paywise/theme/glass_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -24,15 +25,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final ValueNotifier<bool> _isScrolled = ValueNotifier<bool>(false);
   static final NumberFormat _currencyFormat = AppCurrency.formatter;
   String _selectedAnalysisScope = 'all';
+  String _selectedOutstandingScope = 'all';
+  bool _showOutstandingPercentage = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSavedScopes();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         Provider.of<LoanProvider>(context, listen: false).initLoans();
       }
     });
+  }
+
+  Future<void> _loadSavedScopes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? 'default';
+      final savedAnalysis = prefs.getString('dashboard_selected_analysis_scope_$uid');
+      final savedOutstanding = prefs.getString('dashboard_selected_outstanding_scope_$uid');
+      if (mounted) {
+        setState(() {
+          if (savedAnalysis != null && savedAnalysis.isNotEmpty) {
+            _selectedAnalysisScope = savedAnalysis;
+          }
+          if (savedOutstanding != null && savedOutstanding.isNotEmpty) {
+            _selectedOutstandingScope = savedOutstanding;
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveAnalysisScope(String val) async {
+    setState(() => _selectedAnalysisScope = val);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? 'default';
+      await prefs.setString('dashboard_selected_analysis_scope_$uid', val);
+    } catch (_) {}
+  }
+
+  Future<void> _saveOutstandingScope(String val) async {
+    setState(() => _selectedOutstandingScope = val);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? 'default';
+      await prefs.setString('dashboard_selected_outstanding_scope_$uid', val);
+    } catch (_) {}
   }
 
   @override
@@ -206,146 +247,427 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 20),
 
               // ── 2. HERO TOTAL OUTSTANDING CARD ──
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: GlassTheme.gradientCardDecoration(
-                  context,
-                  colors: const [Color(0xFF1E3C72), Color(0xFF2A5298)],
-                  radius: 24,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Total Outstanding",
-                                style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(height: 6),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  currency.format(loanProvider.totalOutstanding),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Wallet Icon Circle
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.account_balance_wallet_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ],
-                    ),
+              () {
+                final bool isSpecificOutstandingLoan = _selectedOutstandingScope != 'all' &&
+                    loanProvider.loans.any((l) => l.id == _selectedOutstandingScope);
 
-                    const SizedBox(height: 20),
-                    const Divider(color: Colors.white24, height: 1),
-                    const SizedBox(height: 16),
+                final LoanModel? selectedOutstandingLoan = isSpecificOutstandingLoan
+                    ? loanProvider.loans.firstWhere((l) => l.id == _selectedOutstandingScope)
+                    : null;
 
-                    // Card Bottom Stats Row
-                    Row(
-                      children: [
-                        // Monthly Outflow
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 16),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Monthly Outflow",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                final double displayPrincipal;
+                final double displayOutstanding;
+                final double displayMonthlyOutflow;
+                final double progress;
+                final double paidAmount;
+
+                if (selectedOutstandingLoan != null) {
+                  displayPrincipal = selectedOutstandingLoan.principalAmount;
+                  displayOutstanding = selectedOutstandingLoan.isPaidOff ? 0.0 : selectedOutstandingLoan.outstandingBalance;
+                  displayMonthlyOutflow = selectedOutstandingLoan.isPaidOff ? 0.0 : selectedOutstandingLoan.emiAmount;
+                  paidAmount = max(0.0, displayPrincipal - displayOutstanding);
+                  progress = displayPrincipal > 0
+                      ? (paidAmount / displayPrincipal).clamp(0.0, 1.0)
+                      : (selectedOutstandingLoan.isPaidOff ? 1.0 : 0.0);
+                } else {
+                  displayPrincipal = loanProvider.loans.fold<double>(0.0, (sum, l) => sum + l.principalAmount);
+                  displayOutstanding = loanProvider.totalOutstanding;
+                  displayMonthlyOutflow = loanProvider.monthlyOutflow;
+                  paidAmount = max(0.0, displayPrincipal - displayOutstanding);
+                  progress = displayPrincipal > 0
+                      ? (paidAmount / displayPrincipal).clamp(0.0, 1.0)
+                      : 0.0;
+                }
+                final int progressPct = (progress * 100).round();
+
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: GlassTheme.gradientCardDecoration(
+                    context,
+                    colors: const [Color(0xFF1E3C72), Color(0xFF2A5298)],
+                    radius: 24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Dropdown to select individual loan like in Cost of Debt card
+                                PopupMenuButton<String>(
+                                  tooltip: 'Select Loan',
+                                  initialValue: isSpecificOutstandingLoan ? _selectedOutstandingScope : 'all',
+                                  elevation: 8,
+                                  offset: const Offset(0, 30),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: BorderSide(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.12)
+                                          : Colors.black.withValues(alpha: 0.08),
                                     ),
-                                    FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        currency.format(loanProvider.monthlyOutflow),
-                                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                  ),
+                                  color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                                  onSelected: (val) {
+                                    _saveOutstandingScope(val);
+                                  },
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem<String>(
+                                      value: 'all',
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.pie_chart_outline_rounded, size: 18, color: Color(0xFF1E3C72)),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            "All Loans (Total Outstanding)",
+                                            style: TextStyle(
+                                              fontWeight: !isSpecificOutstandingLoan ? FontWeight.bold : FontWeight.normal,
+                                              color: !isSpecificOutstandingLoan ? const Color(0xFF1E3C72) : null,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    if (loanProvider.loans.isNotEmpty) const PopupMenuDivider(),
+                                    ...loanProvider.loans.map((l) {
+                                      final bool isSelected = isSpecificOutstandingLoan && _selectedOutstandingScope == l.id;
+                                      return PopupMenuItem<String>(
+                                        value: l.id,
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              l.isPaidOff
+                                                  ? Icons.check_circle_outline_rounded
+                                                  : Icons.account_balance_wallet_outlined,
+                                              size: 18,
+                                              color: l.isPaidOff ? Colors.green : const Color(0xFF1E3C72),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                l.title.isNotEmpty ? l.title : '${l.category} Loan',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                                  color: isSelected ? const Color(0xFF1E3C72) : null,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          selectedOutstandingLoan != null
+                                              ? (selectedOutstandingLoan.title.isNotEmpty
+                                                  ? selectedOutstandingLoan.title
+                                                  : "${selectedOutstandingLoan.category} Loan")
+                                              : "Total Outstanding",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        size: 20,
+                                        color: Colors.white70,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  selectedOutstandingLoan != null
+                                      ? "Showing individual loan balance"
+                                      : "Overall Portfolio View",
+                                  style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                                ),
+                                const SizedBox(height: 8),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    currency.format(displayOutstanding),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Wallet Icon Circle with Circular Loading Progress Ring around it
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showOutstandingPercentage = !_showOutstandingPercentage;
+                              });
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                  elevation: 0,
+                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  duration: const Duration(seconds: 3),
+                                  content: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    decoration: GlassTheme.dialogDecoration(context, radius: 16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF10B981),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${(progress * 100).toStringAsFixed(1)}% Completed",
+                                                style: TextStyle(
+                                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                "${currency.format(paidAmount)} paid of ${currency.format(displayPrincipal)}",
+                                                style: TextStyle(
+                                                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Tooltip(
+                              message: "Tap to view completion % ($progressPct%)",
+                              child: SizedBox(
+                                width: 58,
+                                height: 58,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // Ambient frosted circle behind wallet
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.18),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    // Circular Progress Ring filling with % completed
+                                    TweenAnimationBuilder<double>(
+                                      tween: Tween<double>(begin: 0.0, end: progress),
+                                      duration: const Duration(milliseconds: 800),
+                                      curve: Curves.easeOutCubic,
+                                      builder: (context, val, _) {
+                                        return SizedBox(
+                                          width: 56,
+                                          height: 56,
+                                          child: CircularProgressIndicator(
+                                            value: val,
+                                            strokeWidth: 3.5,
+                                            strokeCap: StrokeCap.round,
+                                            backgroundColor: Colors.white.withValues(alpha: 0.20),
+                                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4EECD4)),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    // Center Wallet Icon or % Completed when clicked
+                                    AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 250),
+                                      transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                                      child: _showOutstandingPercentage
+                                          ? Text(
+                                              "$progressPct%",
+                                              key: const ValueKey('pct_txt'),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                                letterSpacing: -0.2,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.account_balance_wallet_rounded,
+                                              key: ValueKey('wallet_icon'),
+                                              color: Colors.white,
+                                              size: 26,
+                                            ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        Container(width: 1, height: 32, color: Colors.white24),
-                        const SizedBox(width: 16),
-                        // Active Loans
-                        Expanded(
+                        ],
+                      ),
+
+                      if (selectedOutstandingLoan != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white24, width: 1.0),
+                          ),
                           child: Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 16),
-                              ),
-                              const SizedBox(width: 10),
+                              Icon(selectedOutstandingLoan.categoryIcon, size: 15, color: Colors.white),
+                              const SizedBox(width: 6),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Active Loans",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: Colors.white70, fontSize: 11),
-                                    ),
-                                    Text(
-                                      "${loanProvider.loans.where((l) => !l.isPaidOff).length}",
-                                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                child: Text(
+                                  "${selectedOutstandingLoan.title} · ${selectedOutstandingLoan.interestRate}% APR · $progressPct% Paid",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Colors.white),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _saveOutstandingScope('all'),
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 4),
+                                  child: Icon(Icons.close_rounded, size: 16, color: Colors.white),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ],
-                    ),
-                  ],
-                ),
-              ),
+
+                      const SizedBox(height: 18),
+                      const Divider(color: Colors.white24, height: 1),
+                      const SizedBox(height: 16),
+
+                      // Card Bottom Stats Row
+                      Row(
+                        children: [
+                          // Monthly Outflow / EMI
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 16),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        selectedOutstandingLoan != null ? "Monthly EMI" : "Monthly Outflow",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                      ),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          currency.format(displayMonthlyOutflow),
+                                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(width: 1, height: 32, color: Colors.white24),
+                          const SizedBox(width: 16),
+                          // Active Loans / Completion Status
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    selectedOutstandingLoan != null
+                                        ? (selectedOutstandingLoan.isPaidOff ? Icons.check_circle_rounded : Icons.pie_chart_rounded)
+                                        : Icons.flash_on_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        selectedOutstandingLoan != null ? "Paid Off" : "Active Loans",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                      ),
+                                      Text(
+                                        selectedOutstandingLoan != null
+                                            ? "$progressPct%"
+                                            : "${loanProvider.loans.where((l) => !l.isPaidOff).length}",
+                                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }(),
 
               const SizedBox(height: 24),
 
@@ -402,7 +724,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
                               onSelected: (val) {
-                                setState(() => _selectedAnalysisScope = val);
+                                _saveAnalysisScope(val);
                               },
                               itemBuilder: (context) => [
                                 PopupMenuItem<String>(
@@ -499,7 +821,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => setState(() => _selectedAnalysisScope = 'all'),
+                                  onTap: () => _saveAnalysisScope('all'),
                                   child: const Padding(
                                     padding: EdgeInsets.only(left: 4),
                                     child: Icon(Icons.close_rounded, size: 16, color: Colors.indigo),
@@ -678,57 +1000,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
-      alignment: Alignment.center,
-      decoration: GlassTheme.cardDecoration(context, radius: 24),
+      borderRadius: 24,
+      blur: 20,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B4CCA).withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [
+                        const Color(0xFF6366F1).withValues(alpha: 0.28),
+                        const Color(0xFF4F46E5).withValues(alpha: 0.12),
+                      ]
+                    : [
+                        const Color(0xFF3B4CCA).withValues(alpha: 0.18),
+                        const Color(0xFF3B4CCA).withValues(alpha: 0.08),
+                      ],
+              ),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.28)
+                    : const Color(0xFF3B4CCA).withValues(alpha: 0.35),
+                width: 1.4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (isDark ? const Color(0xFF6366F1) : const Color(0xFF3B4CCA)).withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_balance_wallet_outlined,
-              size: 44,
-              color: Color(0xFF3B4CCA),
+              size: 42,
+              color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF3B4CCA),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           const Text(
             "No Loans Added Yet",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 17,
+              fontSize: 18,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          const SizedBox(height: 8),
+          Text(
             "Start tracking your EMIs, calculate prepayment savings, and take control of your debt.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.4),
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 13,
+              height: 1.45,
+            ),
           ),
-          const SizedBox(height: 20),
-          SizedBox(
+          const SizedBox(height: 22),
+          GlassButton(
             width: double.infinity,
             height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B4CCA),
-                foregroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: const Text(
-                "Add Your First Loan",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
-              ),
-              onPressed: () => Navigator.pushNamed(context, '/add_loan'),
+            radius: 14,
+            color: const Color(0xFF3B4CCA),
+            icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, '/add_loan'),
+            child: const Text(
+              "Add Your First Loan",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
             ),
           ),
         ],
@@ -738,18 +1080,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildAllDebtFreeState(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: GlassTheme.cardDecoration(context, radius: 24),
+      borderRadius: 24,
+      blur: 20,
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+              color: const Color(0xFF10B981).withValues(alpha: 0.14),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                width: 1.4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.22),
+                  blurRadius: 18,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: const Icon(Icons.verified_rounded, size: 48, color: Color(0xFF10B981)),
           ),
@@ -764,12 +1118,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           GlassButton(
             onPressed: () => Navigator.pushNamed(context, '/loan_history'),
             icon: const Icon(Icons.history_rounded, size: 18, color: Colors.white),
             color: const Color(0xFF0F766E),
-            height: 44,
+            height: 46,
             radius: 14,
             child: const Text("View Loan History"),
           ),

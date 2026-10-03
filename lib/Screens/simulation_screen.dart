@@ -746,13 +746,11 @@ class _LumpSumTab extends StatefulWidget {
 
 class _LumpSumTabState extends State<_LumpSumTab> {
   LumpSumMode _mode = LumpSumMode.annual;
-  LumpSumMode _previousMode = LumpSumMode.annual;
 
   void _onModeChanged(LumpSumMode newMode) {
     if (_mode == newMode) return;
     HapticFeedback.selectionClick();
     setState(() {
-      _previousMode = _mode;
       _mode = newMode;
     });
   }
@@ -1093,67 +1091,31 @@ class _LumpSumTabState extends State<_LumpSumTab> {
           const SizedBox(height: 16),
 
           // ── MODE CONTENT WITH ANIMATED TRANSITION ──
-          AnimatedSize(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-                return Stack(
-                  alignment: Alignment.topCenter,
-                  children: <Widget>[
-                    ...previousChildren,
-                    if (currentChild != null) currentChild,
-                  ],
-                );
-              },
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                final isIncoming = child.key == ValueKey<LumpSumMode>(_mode);
-                final isForward = _mode.index >= _previousMode.index;
-
-                final slideOffset = isIncoming
-                    ? Tween<Offset>(
-                        begin: Offset(isForward ? 0.06 : -0.06, 0),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ))
-                    : Tween<Offset>(
-                        begin: Offset(isForward ? -0.06 : 0.06, 0),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInCubic,
-                      ));
-
-                return FadeTransition(
-                  opacity: CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOut,
-                  ),
-                  child: SlideTransition(
-                    position: slideOffset,
-                    child: child,
-                  ),
-                );
-              },
-              child: KeyedSubtree(
-                key: ValueKey<LumpSumMode>(_mode),
-                child: () {
-                  switch (_mode) {
-                    case LumpSumMode.single:
-                      return _buildSingleModeCard(loan, accentColor);
-                    case LumpSumMode.annual:
-                      return _buildAnnualModeCard(loan, accentColor);
-                    case LumpSumMode.custom:
-                      return _buildCustomModeCard(loan, accentColor, isDark, currency);
-                  }
-                }(),
-              ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                ),
+                child: child,
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<LumpSumMode>(_mode),
+              child: () {
+                switch (_mode) {
+                  case LumpSumMode.single:
+                    return _buildSingleModeCard(loan, accentColor);
+                  case LumpSumMode.annual:
+                    return _buildAnnualModeCard(loan, accentColor);
+                  case LumpSumMode.custom:
+                    return _buildCustomModeCard(loan, accentColor, isDark, currency);
+                }
+              }(),
             ),
           ),
 
@@ -1449,6 +1411,7 @@ class _LumpSumTabState extends State<_LumpSumTab> {
       title: 'Custom Multiple Prepayments',
       subtitle: 'Add custom lump sum payments for specific months',
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── INFORMATIVE EXPLANATION BANNER ──
@@ -1517,58 +1480,62 @@ class _LumpSumTabState extends State<_LumpSumTab> {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _customEntries.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final entry = _customEntries[index];
-                final year = (entry.month / 12).ceil();
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int index = 0; index < _customEntries.length; index++) ...[
+                  if (index > 0) const SizedBox(height: 8),
+                  Builder(
+                    builder: (context) {
+                      final entry = _customEntries[index];
+                      final year = (entry.month / 12).ceil();
 
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF141624) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isDark ? const Color(0xFF2E324A) : const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.indigo.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                          color: isDark ? const Color(0xFF141624) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? const Color(0xFF2E324A) : const Color(0xFFE2E8F0)),
                         ),
-                        child: const Icon(Icons.stars_rounded, color: Colors.indigo, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              "Month ${entry.month} (Year $year)",
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.stars_rounded, color: Colors.indigo, size: 18),
                             ),
-                            Text(
-                              "Extra ${currency.format(entry.amount)} + Regular EMI",
-                              style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Month ${entry.month} (Year $year)",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                  Text(
+                                    "Extra ${currency.format(entry.amount)} + Regular EMI",
+                                    style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
+                              onPressed: () {
+                                setState(() => _customEntries.removeAt(index));
+                              },
                             ),
                           ],
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
-                        onPressed: () {
-                          setState(() => _customEntries.removeAt(index));
-                        },
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
+                ],
+              ],
             ),
         ],
       ),
@@ -1975,6 +1942,7 @@ class _SimCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: GlassTheme.cardDecoration(context, radius: 20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(

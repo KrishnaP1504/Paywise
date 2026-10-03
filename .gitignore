@@ -57,6 +57,7 @@ desktop.ini
 *.log
 *.tmp
 *.bak
+*.pdf
 test_out.txt
 
 # 8. Unused Platform Stubs

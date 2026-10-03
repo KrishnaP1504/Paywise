@@ -47,7 +47,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
         child: ScrolledNotificationWrapper(
           isScrolledNotifier: _isScrolled,
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, totalTopPadding, 16, 60),
+            padding: EdgeInsets.fromLTRB(8, totalTopPadding, 8, 60),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

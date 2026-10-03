@@ -38,88 +38,92 @@ class NotFoundScreen extends StatelessWidget {
       body: GlassBackground(
         child: SafeArea(
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 404 Icon & Badge
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B4CCA).withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF3B4CCA).withValues(alpha: 0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.explore_off_rounded,
-                      size: 48,
-                      color: Color(0xFF3B4CCA),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Title & Code
-                  Text(
-                    "Screen Not Found (404)",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Subtitle
-                  Text(
-                    routeName != null && routeName!.isNotEmpty
-                        ? "The destination '$routeName' could not be found or is no longer available."
-                        : "The screen you are looking for doesn't exist or has moved.",
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      height: 1.5,
-                      color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Single Clear Primary Call To Action (CTA)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B4CCA),
-                        foregroundColor: Colors.white,
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 24.0),
+              child: GlassContainer(
+                borderRadius: 24,
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 404 Icon & Badge
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B4CCA).withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF3B4CCA).withValues(alpha: 0.35),
+                          width: 1.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3B4CCA).withValues(alpha: 0.20),
+                            blurRadius: 18,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      icon: const Icon(Icons.home_rounded, size: 20),
-                      label: const Text(
-                        "Return to Dashboard",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.3,
-                        ),
+                      child: const Icon(
+                        Icons.explore_off_rounded,
+                        size: 44,
+                        color: Color(0xFF3B4CCA),
                       ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Title & Code
+                    Text(
+                      "Screen Not Found (404)",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Subtitle
+                    Text(
+                      routeName != null && routeName!.isNotEmpty
+                          ? "The destination '$routeName' could not be found or is no longer available."
+                          : "The screen you are looking for doesn't exist or has moved.",
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        height: 1.5,
+                        color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Single Clear Primary Call To Action (CTA)
+                    GlassButton(
+                      width: double.infinity,
+                      height: 50,
+                      radius: 14,
+                      color: const Color(0xFF3B4CCA),
+                      icon: const Icon(Icons.home_rounded, size: 20, color: Colors.white),
                       onPressed: () {
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           '/dashboard',
                           (route) => false,
                         );
                       },
+                      child: const Text(
+                        "Return to Dashboard",
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
