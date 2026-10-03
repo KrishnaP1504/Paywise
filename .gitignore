@@ -36,6 +36,7 @@ android/key.properties
 .pub/
 build/
 lib.zip
+.kotlin/
 
 # 5. iOS Specific Pods & Framework Bloat
 ios/Pods/
