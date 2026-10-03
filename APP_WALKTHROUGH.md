@@ -308,7 +308,16 @@ Every notification category can be individually toggled in Settings alongside a 
 * **Appearance (Dark Mode)**: Dynamic system tracking switch with manual override and an "Auto" reset button.
 * **Biometric Security**: Switch to activate Face ID / Touch ID / Fingerprint lock.
 * **Interaction (Swipe Actions)**: Toggle to enable or disable swipe gestures on dashboard cards with reactive real-time updates.
-* **Notification Preferences**: Independent toggles for Advance, Due Tomorrow, Due Today, and Overdue alerts.
+* **Notification Preferences**: Independent toggles for Advance (7-day and 3-day), Due Tomorrow (1-day before), Due Today, and Overdue follow-up alerts.
+* **Intelligent 5-Stage Dual-Cycle Alarm Engine**:
+  * **Checkpoint 1 (7 Days Before at 9:30 AM)**: Advance budget notification showing weekday and exact due date to prepare account balances.
+  * **Checkpoint 2 (3 Days Before at 10:00 AM)**: Mid-week reminder prompting verification of sufficient bank liquidity.
+  * **Checkpoint 3 (1 Day Before at 7:00 PM)**: Eve of payment deadline alert reminding borrowers of tomorrow's debit.
+  * **Checkpoint 4 (Due Date at 8:00 AM)**: Urgent morning due alert with smart instant catch-up fallback if the user launches the app during the day.
+  * **Checkpoint 5 (Overdue Follow-Up at 11:00 AM, 1 Day Later)**: Immediate follow-up notification if an EMI payment has passed without being recorded.
+  * **Dual-Cycle Lookahead**: Reminders are automatically scheduled across two consecutive monthly cycles (current month and next month), preventing reminder gaps if the app is not opened for weeks.
+  * **System Reboot & AlarmManager Reliability**: Registered with native ScheduledNotificationReceiver and ScheduledNotificationBootReceiver to survive device reboots, app updates, and Android Doze battery optimizations.
+  * **Automatic Lifecycle Sync**: All active loans automatically synchronize with device alarm managers upon login, loan creation, payment recording, and preference toggling.
 * **Privacy Policy Access**: Dedicated link opening the comprehensive in-app privacy and data protection policy.
 * **Danger Zone**: Access to the 7-Day Grace Period account deletion workflow.
 * **Version & Copyright**: Displays `Version 1.0.0` and `© 2026 PayWise. All rights reserved.`.
