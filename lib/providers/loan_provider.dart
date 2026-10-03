@@ -46,6 +46,16 @@ class LoanProvider with ChangeNotifier {
     _previousMonthOutstanding = -1;
     _hasTriggeredBackfill = false;
     notifyListeners();
+    try {
+      NotificationService().cancelAllReminders();
+    } catch (_) {}
+  }
+
+  /// Manually triggers a re-sync of all loan reminders with AlarmManager
+  Future<void> rescheduleAllReminders() async {
+    try {
+      await NotificationService().syncAllLoanReminders(_loans);
+    } catch (_) {}
   }
 
   double get totalOutstanding {
@@ -89,6 +99,11 @@ class LoanProvider with ChangeNotifier {
           _checkAndUpdateMonthlySnapshot();
           _triggerBackfillOnceIfNeeded(_loans);
           notifyListeners();
+
+          // CRITICAL: Synchronize all active loan reminders with Android/iOS AlarmManager
+          try {
+            NotificationService().syncAllLoanReminders(_loans);
+          } catch (_) {}
         },
         onError: (e) {
           debugPrint("Loans fetch error: $e");
@@ -295,6 +310,10 @@ class LoanProvider with ChangeNotifier {
       };
     }
 
+    try {
+      NotificationService().syncAllLoanReminders(_loans);
+    } catch (_) {}
+
     return {'isPaidOff': false};
   }
 
@@ -332,6 +351,9 @@ class LoanProvider with ChangeNotifier {
     loanMap['userEmail'] = user.email ?? '';
 
     DocumentReference docRef = await FirebaseFirestore.instance.collection('loans').add(loanMap);
+    try {
+      await NotificationService().syncAllLoanReminders(_loans);
+    } catch (_) {}
     return docRef.id; 
   }
 

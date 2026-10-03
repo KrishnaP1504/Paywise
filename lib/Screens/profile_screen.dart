@@ -467,7 +467,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),
-                      onTap: () => settings.toggleAllNotifications(!settings.notificationsEnabled),
+                      onTap: () async {
+                        final newVal = !settings.notificationsEnabled;
+                        await settings.toggleAllNotifications(newVal);
+                        if (context.mounted) {
+                          Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                        }
+                      },
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       leading: Container(
                         padding: const EdgeInsets.all(10),
@@ -482,7 +488,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       trailing: Switch(
                         value: settings.notificationsEnabled,
                         activeTrackColor: primaryNavy,
-                        onChanged: (val) => settings.toggleAllNotifications(val),
+                        onChanged: (val) async {
+                          await settings.toggleAllNotifications(val);
+                          if (context.mounted) {
+                            Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                          }
+                        },
                       ),
                     ),
 
@@ -491,7 +502,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       // Due Today Alerts
                       ListTile(
-                        onTap: () => settings.toggleNotifyDueToday(!settings.notifyDueToday),
+                        onTap: () async {
+                          final newVal = !settings.notifyDueToday;
+                          await settings.toggleNotifyDueToday(newVal);
+                          if (context.mounted) {
+                            Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                          }
+                        },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                         leading: Container(
                           padding: const EdgeInsets.all(10),
@@ -506,14 +523,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         trailing: Switch(
                           value: settings.notifyDueToday,
                           activeTrackColor: primaryNavy,
-                          onChanged: (val) => settings.toggleNotifyDueToday(val),
+                          onChanged: (val) async {
+                            await settings.toggleNotifyDueToday(val);
+                            if (context.mounted) {
+                              Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                            }
+                          },
                         ),
                       ),
                       Divider(height: 1, indent: 64, endIndent: 16, color: isDark ? Colors.grey[800] : Colors.grey[200]),
 
                       // Due Tomorrow (1 Day Before)
                       ListTile(
-                        onTap: () => settings.toggleNotifyDueTomorrow(!settings.notifyDueTomorrow),
+                        onTap: () async {
+                          final newVal = !settings.notifyDueTomorrow;
+                          await settings.toggleNotifyDueTomorrow(newVal);
+                          if (context.mounted) {
+                            Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                          }
+                        },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                         leading: Container(
                           padding: const EdgeInsets.all(10),
@@ -528,14 +556,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         trailing: Switch(
                           value: settings.notifyDueTomorrow,
                           activeTrackColor: primaryNavy,
-                          onChanged: (val) => settings.toggleNotifyDueTomorrow(val),
+                          onChanged: (val) async {
+                            await settings.toggleNotifyDueTomorrow(val);
+                            if (context.mounted) {
+                              Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                            }
+                          },
                         ),
                       ),
                       Divider(height: 1, indent: 64, endIndent: 16, color: isDark ? Colors.grey[800] : Colors.grey[200]),
 
                       // Advance Reminders (3 Days & 7 Days Prior)
                       ListTile(
-                        onTap: () => settings.toggleNotifyAdvance(!settings.notifyAdvance),
+                        onTap: () async {
+                          final newVal = !settings.notifyAdvance;
+                          await settings.toggleNotifyAdvance(newVal);
+                          if (context.mounted) {
+                            Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                          }
+                        },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                         leading: Container(
                           padding: const EdgeInsets.all(10),
@@ -550,14 +589,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         trailing: Switch(
                           value: settings.notifyAdvance,
                           activeTrackColor: primaryNavy,
-                          onChanged: (val) => settings.toggleNotifyAdvance(val),
+                          onChanged: (val) async {
+                            await settings.toggleNotifyAdvance(val);
+                            if (context.mounted) {
+                              Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                            }
+                          },
                         ),
                       ),
                       Divider(height: 1, indent: 64, endIndent: 16, color: isDark ? Colors.grey[800] : Colors.grey[200]),
 
                       // Overdue Alerts
                       ListTile(
-                        onTap: () => settings.toggleNotifyOverdue(!settings.notifyOverdue),
+                        onTap: () async {
+                          final newVal = !settings.notifyOverdue;
+                          await settings.toggleNotifyOverdue(newVal);
+                          if (context.mounted) {
+                            Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                          }
+                        },
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                         leading: Container(
                           padding: const EdgeInsets.all(10),
@@ -572,7 +622,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         trailing: Switch(
                           value: settings.notifyOverdue,
                           activeTrackColor: primaryNavy,
-                          onChanged: (val) => settings.toggleNotifyOverdue(val),
+                          onChanged: (val) async {
+                            await settings.toggleNotifyOverdue(val);
+                            if (context.mounted) {
+                              Provider.of<LoanProvider>(context, listen: false).rescheduleAllReminders();
+                            }
+                          },
                         ),
                       ),
                     ],
@@ -598,12 +653,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: () async {
                         try {
-                          await NotificationService().showTestNotification();
+                          final pendingCount = await NotificationService().showTestNotification();
                           if (context.mounted) {
                             UndoToastManager.showSuccessToast(
                               context: context,
                               title: "Test Notification Sent 🔔",
-                              subtitle: "Check your phone's notification tray.",
+                              subtitle: "Banner sent & 5s test alarm set ($pendingCount active reminders queued).",
                             );
                           }
                         } catch (e) {
@@ -618,6 +673,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       },
                     ),
+
                   ],
                 ),
               ),
