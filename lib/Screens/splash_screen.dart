@@ -222,6 +222,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 // Logo image
                                 Image.asset(
                                   'assets/images/paywise_logo.png',
+                                  semanticLabel: 'PayWise Brand Logo',
                                   width: 135,
                                   height: 135,
                                   cacheWidth: 270,

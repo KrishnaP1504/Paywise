@@ -16,6 +16,9 @@ import 'package:paywise/Screens/profile_screen.dart';
 import 'package:paywise/Screens/edit_info_screen.dart';
 import 'package:paywise/Screens/welcome_screen.dart';
 import 'package:paywise/Screens/privacy_policy_screen.dart';
+import 'package:paywise/Screens/terms_conditions_screen.dart';
+import 'package:paywise/Screens/not_found_screen.dart';
+import 'package:paywise/services/analytics_service.dart';
 import 'package:paywise/theme/glass_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
@@ -43,6 +46,7 @@ void main() async {
       persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
+    await AnalyticsService().init();
   } catch (e) {
     if (!e.toString().contains('duplicate-app')) {
       debugPrint("Firebase Init Error: $e");
@@ -140,6 +144,7 @@ class MyApp extends StatelessWidget {
               '/edit_info': (context) => const EditInfoScreen(),
               '/welcome': (context) => const WelcomeScreen(),
               '/privacy_policy': (context) => const PrivacyPolicyScreen(),
+              '/terms_conditions': (context) => const TermsConditionsScreen(),
             };
 
             final builder = routes[settings.name];
@@ -147,6 +152,12 @@ class MyApp extends StatelessWidget {
               return _buildPageRoute(builder(context), settings);
             }
             return null;
+          },
+          onUnknownRoute: (settings) {
+            return _buildPageRoute(
+              NotFoundScreen(routeName: settings.name),
+              settings,
+            );
           },
         );
       },

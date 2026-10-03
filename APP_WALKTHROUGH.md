@@ -337,6 +337,19 @@ Every notification category can be individually toggled in Settings alongside a 
 * **Data Isolation & Encryption**: Outlines user sandboxing under Firebase Authentication IDs, TLS 1.3 transit encryption, and AES-256 rest encryption.
 * **Full Data Ownership & Erasure**: Reaffirms the user's right to full data export, account restoration, or permanent purge.
 
+### Screen 16: Terms & Conditions Screen
+* **Dedicated Legal Agreement**: In-app breakdown of user obligations, calculations disclaimers, and software terms.
+* **Analytical Calculation Disclaimer**: Explicitly confirms that PayWise is a budgeting and mathematical calculation utility, not a licensed banking institution or financial advisor.
+* **Amortization Variance Notice**: Discloses that bank statement differences may occur due to leap-year calculations, daily interest compounding, or specific lender processing fees.
+* **Account Security Responsibilities**: Outlines user responsibility for credential confidentiality and local device protection.
+* **Push Notification Reminder Terms**: Clarifies that while advance alarms are scheduled across multiple checkpoints, borrowers remain responsible for satisfying bank dues.
+* **Limitation of Liability**: Reaffirms standard software liability limitations regarding external late fees or credit score fluctuations.
+
+### Screen 17: Screen Not Found (404 Fallback) Screen
+* **Crash-Proof Route Fallback**: Gracefully intercepts broken deep-links, outdated shortcuts, or missing routes via the root navigator.
+* **User Feedback**: Presents an intuitive frosted glass 404 icon badge and informative message indicating the requested destination does not exist.
+* **Single Clear Call-To-Action (CTA)**: Prominent primary button returning the user safely to the dashboard command center.
+
 ---
 
 ## 9. Interactive UI Ergonomics & Toast System

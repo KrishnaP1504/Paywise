@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (_isLoading) return;
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
@@ -468,6 +469,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: Image.asset(
                                 'assets/images/paywise_logo.png',
+                                semanticLabel: 'PayWise Brand Logo',
                                 width: 165,
                                 height: 165,
                                 cacheWidth: 330,

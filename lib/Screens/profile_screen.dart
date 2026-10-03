@@ -815,7 +815,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 20),
 
-          // ── 4. PRIVACY POLICY CARD ──
+          // ── 4. LEGAL & COMPLIANCE ──
+          Row(
+            children: [
+              const Icon(Icons.shield_outlined, color: primaryNavy, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                "Legal & Compliance",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: sectionTextColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           Container(
             decoration: GlassTheme.cardDecoration(context, radius: 20),
             child: ClipRRect(
@@ -824,25 +839,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 clipBehavior: Clip.antiAlias,
-                child: ListTile(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: primaryNavy.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
+                child: Column(
+                  children: [
+                    // Privacy Policy
+                    ListTile(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: primaryNavy.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.policy_outlined, color: primaryNavy),
+                      ),
+                      title: const Text("Privacy Policy", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      subtitle: const Text("Zero trackers & local privacy protections", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/privacy_policy');
+                      },
                     ),
-                    child: const Icon(Icons.policy_outlined, color: primaryNavy),
-                  ),
-                  title: const Text("Privacy Policy", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  subtitle: const Text("How your data & security are protected", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/privacy_policy');
-                  },
+                    Divider(height: 1, indent: 64, endIndent: 16, color: isDark ? Colors.grey[800] : Colors.grey[200]),
+
+                    // Terms & Conditions
+                    ListTile(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurpleAccent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.article_outlined, color: Colors.deepPurpleAccent),
+                      ),
+                      title: const Text("Terms & Conditions", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      subtitle: const Text("User agreement & calculations disclaimer", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/terms_conditions');
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),

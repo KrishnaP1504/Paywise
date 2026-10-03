@@ -327,6 +327,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   }
 
   Future<void> _saveLoan() async {
+    if (_isSaving) return;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       UndoToastManager.showErrorToast(
@@ -345,8 +346,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     String cleanLender = _lenderController.text.trim();
 
     final double principal = AppCurrency.parseClean(_amountController.text) ?? 0.0;
-    final double rate = double.parse(_rateController.text);
-    final int tenure = int.parse(_tenureController.text);
+    final double rate = double.tryParse(_rateController.text.trim()) ?? 0.0;
+    final int tenure = max(1, int.tryParse(_tenureController.text.trim()) ?? 1);
 
     double emi = _previewEMI ?? 0;
     if (emi <= 0) {
@@ -506,6 +507,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                         // 3D Wallet / Logo Graphic
                         Image.asset(
                           'assets/images/paywise_logo.png',
+                          semanticLabel: 'PayWise Brand Logo',
                           width: 75,
                           height: 75,
                           cacheWidth: 150,

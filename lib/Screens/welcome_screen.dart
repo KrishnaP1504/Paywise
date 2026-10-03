@@ -105,6 +105,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 clipBehavior: Clip.antiAlias,
                                 child: Image.asset(
                                   'assets/images/paywise_logo.png',
+                                  semanticLabel: 'PayWise Brand Logo',
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => const Icon(
                                     Icons.account_balance_wallet_rounded,

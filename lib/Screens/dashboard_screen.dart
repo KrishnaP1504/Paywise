@@ -679,13 +679,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildEmptyState() {
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
       alignment: Alignment.center,
-      child: const Column(
+      decoration: GlassTheme.cardDecoration(context, radius: 24),
+      child: Column(
         children: [
-          Icon(Icons.description_outlined, size: 60, color: Colors.grey),
-          SizedBox(height: 10),
-          Text("No loans added yet.", style: TextStyle(color: Colors.grey)),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B4CCA).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 44,
+              color: Color(0xFF3B4CCA),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            "No Loans Added Yet",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Start tracking your EMIs, calculate prepayment savings, and take control of your debt.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B4CCA),
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text(
+                "Add Your First Loan",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+              ),
+              onPressed: () => Navigator.pushNamed(context, '/add_loan'),
+            ),
+          ),
         ],
       ),
     );

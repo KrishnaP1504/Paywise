@@ -33,6 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    if (_isLoading) return;
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
@@ -604,6 +605,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 letterSpacing: 0.8,
                               ),
                             ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // ── LEGAL TERMS & PRIVACY FOOTNOTE ──
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                "By registering, you agree to our ",
+                                style: TextStyle(color: textSub, fontSize: 11.5),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.pushNamed(context, '/terms_conditions'),
+                                child: const Text(
+                                  "Terms",
+                                  style: TextStyle(
+                                    color: Color(0xFF3B4CCA),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11.5,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                " & ",
+                                style: TextStyle(color: textSub, fontSize: 11.5),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.pushNamed(context, '/privacy_policy'),
+                                child: const Text(
+                                  "Privacy Policy",
+                                  style: TextStyle(
+                                    color: Color(0xFF3B4CCA),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11.5,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
